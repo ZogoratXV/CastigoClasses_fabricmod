@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.0-beta.2 — 2026-10-06
+
+- HUD compatta medievale fantasy: cornici bronzo/oro, testi pergamena, pannello 172×64 e ritratto 24×24.
+- Barra di otto skill ridotta a 192 unità GUI, con riordino adattato e tema coerente nell'editor.
+- Cuori, barra esperienza e livello vanilla nascosti quando il sistema classi è attivo.
+- Fame spostata nella posizione dei cuori, mantenendo il renderer originale.
+- Ripristino dell'HUD vanilla senza stato server; conservati gli altri indicatori contestuali.
+- Compatibile con plugin 0.1.0-beta.1, senza modifiche al protocollo.
+
 ## 0.1.0-beta.1 — 2026-10-06
 
 - Pannello personaggio con testa della skin, nome, classe, vita, risorsa, livello e gruppo LuckPerms.

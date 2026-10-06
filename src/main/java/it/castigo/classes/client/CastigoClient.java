@@ -53,6 +53,21 @@ public final class CastigoClient implements ClientModInitializer {
         HudElementRegistry.replaceElement(VanillaHudElements.HELD_ITEM_TOOLTIP,original->(graphics,delta)-> {
             if(!isSkillMode())original.extractRenderState(graphics,delta);
         });
+        HudElementRegistry.replaceElement(VanillaHudElements.HEALTH_BAR,original->(graphics,delta)-> {
+            if(!STATE.active())original.extractRenderState(graphics,delta);
+        });
+        HudElementRegistry.replaceElement(VanillaHudElements.EXPERIENCE_LEVEL,original->(graphics,delta)-> {
+            if(!STATE.active())original.extractRenderState(graphics,delta);
+        });
+        HudElementRegistry.replaceElement(VanillaHudElements.FOOD_BAR,original->(graphics,delta)-> {
+            if(!STATE.active()) { original.extractRenderState(graphics,delta);return; }
+            // Move center+10..center+91 to center-91..center-10, retaining vanilla hunger visuals.
+            graphics.pose().pushMatrix();
+            try {
+                graphics.pose().translate(-101,0);
+                original.extractRenderState(graphics,delta);
+            } finally { graphics.pose().popMatrix(); }
+        });
         HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT,Identifier.fromNamespaceAndPath("castigoclasses","portrait"),(graphics,delta)-> {
             if(STATE.active()&&!Minecraft.getInstance().gui.hud.isHidden())CastigoHud.portrait(graphics);
         });

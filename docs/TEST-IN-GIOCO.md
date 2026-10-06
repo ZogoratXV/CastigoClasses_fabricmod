@@ -5,6 +5,7 @@ Compilazione e test automatici sono stati eseguiti. Queste prove richiedono anco
 1. Avvia Purpur 26.2 con il core 2.1.0-beta.5 e il plugin; verifica l'assenza di errori di abilitazione.
 2. Collegati con Minecraft 26.2, Fabric Loader 0.19.5, Fabric API 0.161.0+26.2 e la mod.
 3. Controlla testa della skin, nome, Mago, vita, Mana e gruppo primario LuckPerms. Prova senza LuckPerms.
+   Nella beta.2 verifica il pannello bronzo/oro compatto, anche con scala GUI alta e nomi lunghi. I cuori e XP vanilla (barra e numero) devono essere assenti; le icone fame devono trovarsi a sinistra, al posto dei cuori, in entrambe le modalità hotbar. Prova fame parziale e l'effetto Fame, acqua, armatura e una cavalcatura: non devono sparire gli altri indicatori.
 4. Premi R e 1–8: il numero dello slot impugnato non deve cambiare. Premi di nuovo R: torna la hotbar normale. Rimappa R e K nelle opzioni, prova chat, inventario, F1 e spettatore.
 5. Con K trascina slot 1 su slot 8 e salva; lancia le abilità, riconnettiti e verifica ordine, XP e cooldown.
 6. Mira a un mob per Dardo/Folgore; prova area, gelo, cura con vita ridotta, scudo e teletrasporto vicino a pareti/liquidi. Mira a un blocco per Meteora.

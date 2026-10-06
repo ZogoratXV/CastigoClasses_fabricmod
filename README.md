@@ -1,13 +1,13 @@
 # CastigoClasses — mod Fabric
 
-Companion client **0.1.0-beta.1** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin).
+Companion client **0.1.0-beta.2** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin). Compatibile con il plugin 0.1.0-beta.1 (protocollo v1 invariato).
 
 ## Installazione
 
 - Minecraft **26.2**, Java **25**.
 - Fabric Loader **0.19.5** o superiore.
 - Fabric API **0.161.0+26.2**.
-- Copia `CastigoClasses-Fabric-0.1.0-beta.1.jar` e il JAR di Fabric API nella cartella `mods` del profilo Minecraft 26.2.
+- Sostituisci il vecchio JAR della mod con `CastigoClasses-Fabric-0.1.0-beta.2.jar` nella cartella `mods` del profilo Minecraft 26.2. Mantieni Fabric API; non lasciare entrambe le versioni della mod nella cartella.
 
 Il server rimane Purpur e deve avere CastigoCore e CastigoClasses. Questa mod è solo client.
 
@@ -22,6 +22,16 @@ Il server rimane Purpur e deve avere CastigoCore e CastigoClasses. Questa mod è
 
 Il pannello in alto a sinistra mostra la testa della skin attuale (incluso il secondo strato), nome visualizzato del personaggio, classe, livello, vita, risorsa e gruppo principale LuckPerms, se presente. Il nome e il colore della risorsa arrivano dalla classe: Mana, Vigore, Fede o un'altra etichetta.
 Le skill mostrano icone, ricariche, livello richiesto e indisponibilità per risorsa insufficiente. Nel pannello K il passaggio del mouse mostra descrizione, costo e ricarica.
+
+## HUD medievale fantasy
+
+Il pannello del personaggio misura 172×64 unità GUI, circa il 46% di area in meno rispetto alla beta.1, con cornici in bronzo/oro, rivetti, fondo scuro e testo pergamena. La testa misura 24×24; livello, classe e gruppo restano visibili, con vita/risorsa su due barre sottili e progressione MMO su una linea dorata.
+
+La barra skill è larga 192 unità GUI invece di 224. Cornici e colori sono condivisi con il pannello e con l'editor K; trascinamento e selezione mantengono le nuove dimensioni.
+
+Quando il plugin invia uno stato valido, vengono nascosti i cuori del giocatore, la barra XP vanilla e il numero del livello vanilla. La fame viene spostata nella posizione prima occupata dai cuori, conservando icone, mezze icone, effetto Fame e animazioni originali. Questo vale sia con hotbar normale sia con barra skill attiva. Il salto delle cavalcature e la barra localizzatore non vengono rimossi insieme all'XP.
+
+In assenza del plugin o dopo il timeout tornano automaticamente tutti gli elementi vanilla alle loro posizioni originali. Le dimensioni indicate seguono l'impostazione di scala GUI di Minecraft.
 
 ## Classi dinamiche
 

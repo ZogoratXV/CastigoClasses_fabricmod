@@ -16,6 +16,7 @@ public final class SkillScreen extends Screen {
         super(Component.literal("Personaggio e abilità"));order=new ArrayList<>(CastigoClient.STATE.slots);initialClass=CastigoClient.STATE.classId;
     }
     private int left() { return (width-224)/2; }
+    private int slotsLeft() { return (width-CastigoHud.BAR_WIDTH)/2; }
     private int rowY() { return Math.min(height-64,132); }
     @Override protected void init() {
         addRenderableWidget(Button.builder(Component.literal("Salva disposizione"),button-> {
@@ -28,20 +29,20 @@ public final class SkillScreen extends Screen {
     }
     @Override public boolean isPauseScreen() { return false; }
     @Override public void extractRenderState(GuiGraphicsExtractor g,int mouseX,int mouseY,float delta) {
-        g.fill(0,0,width,height,0xEC101421);
+        g.fill(0,0,width,height,0xEC17130E);
         super.extractRenderState(g,mouseX,mouseY,delta);
         ClientState state=CastigoClient.STATE;ClientState.ClassInfo c=state.currentClass();if(c==null)return;
-        g.centeredText(font,c.name()+" · Livello "+state.level,width/2,12,0xFFE9D8FF);
-        g.centeredText(font,"Trascina le skill o clicca due slot per scambiarli.",width/2,28,0xFFBFC6D8);
+        g.centeredText(font,c.name()+" · Livello "+state.level,width/2,12,0xFFE0C78D);
+        g.centeredText(font,"Trascina le skill o clicca due slot per scambiarli.",width/2,28,0xFFBBAE95);
         String[] labels={"Forza","Destrezza","Vita",c.resourceName(),"Intelligenza","Attacco","Difesa"};
         String[] ids={"strength","dexterity","health","mana","intelligence","attack","defense"};
         for(int i=0;i<7;i++) {
             int col=i%2,row=i/2;
             String text=labels[i]+": "+String.format(Locale.ITALIAN,"%.1f",state.stats.getOrDefault(ids[i],0d));
-            g.text(font,CastigoHud.trim(text,109),left()+col*116,47+row*13,0xFFE0E5F0);
+            g.text(font,CastigoHud.trim(text,109),left()+col*116,47+row*13,0xFFF3E4C5);
         }
-        g.centeredText(font,"Barra abilità · "+CastigoClient.toggle.getTranslatedKeyMessage().getString(),width/2,rowY()-15,0xFFC9ADFA);
-        CastigoHud.slots(g,order,left(),rowY(),picked);
+        g.centeredText(font,"Barra abilità · "+CastigoClient.toggle.getTranslatedKeyMessage().getString(),width/2,rowY()-15,0xFFE0C78D);
+        CastigoHud.slots(g,order,slotsLeft(),rowY(),picked);
         if(changed)g.centeredText(font,"Modifiche da salvare",width/2,rowY()+30,0xFFFFD991);
         int hovered=slot(mouseX,mouseY);
         if(hovered>=0) {
@@ -56,8 +57,8 @@ public final class SkillScreen extends Screen {
         }
     }
     private int slot(double x,double y) {
-        if(y<rowY()||y>=rowY()+24||x<left()||x>=left()+224)return -1;
-        return (int)(x-left())/CastigoHud.SLOT;
+        if(y<rowY()||y>=rowY()+CastigoHud.SLOT_HEIGHT||x<slotsLeft()||x>=slotsLeft()+CastigoHud.BAR_WIDTH)return -1;
+        return (int)(x-slotsLeft())/CastigoHud.SLOT;
     }
     @Override public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick) {
         int hit=slot(event.x(),event.y());
