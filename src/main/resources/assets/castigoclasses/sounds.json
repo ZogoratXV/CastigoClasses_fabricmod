@@ -1,0 +1,5 @@
+{
+  "skill.orison": {
+    "sounds": [{"name":"castigoclasses:skills/orison", "stream":false}]
+  }
+}

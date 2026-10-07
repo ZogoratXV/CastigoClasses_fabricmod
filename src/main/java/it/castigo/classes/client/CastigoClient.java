@@ -78,7 +78,7 @@ public final class CastigoClient implements ClientModInitializer {
     public static boolean isSkillMode() { return skillMode&&STATE.active(); }
     public static void request(String type,JsonObject o) {
         if(Minecraft.getInstance().getConnection()==null||!ClientPlayNetworking.canSend(ClassesPayload.TYPE))return;
-        if(type.equals("hello"))o.addProperty("clientVfx",1);
+        if(type.equals("hello")) { o.addProperty("clientVfx",1);o.addProperty("healingBeam",1); }
         o.addProperty("v",1);o.addProperty("type",type);ClientPlayNetworking.send(new ClassesPayload(o.toString()));
     }
     public static void reorder(List<String> slots) {

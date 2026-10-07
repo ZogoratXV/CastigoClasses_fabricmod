@@ -17,6 +17,12 @@ class EffectMessageTest {
         var e=EffectMessage.read(packet());assertEquals(24,e.sampleCount());assertEquals(e.from(),e.sample(0));assertEquals(e.at(),e.sample(23));
         assertEquals(8,e.durationTicks());assertEquals("minecraft:dust",e.particles().id());
     }
+    @Test void healingBeamCarriesRecipientAndRejectsMalformedTarget() {
+        var p=packet();p.addProperty("shape","HEALING_BEAM");p.addProperty("target","22222222-2222-2222-2222-222222222222");
+        var e=EffectMessage.read(p);assertEquals(EffectMessage.Shape.HEALING_BEAM,e.shape());
+        assertEquals("22222222-2222-2222-2222-222222222222",e.target().toString());
+        p.addProperty("target","invalid");assertThrows(IllegalArgumentException.class,()->EffectMessage.read(p));
+    }
     @Test void checksDistanceToSegmentIncludingMiddle() {
         var e=EffectMessage.read(packet());assertTrue(e.near(new EffectMessage.Position(5,64,2),3));assertFalse(e.near(new EffectMessage.Position(5,64,70),64));
     }

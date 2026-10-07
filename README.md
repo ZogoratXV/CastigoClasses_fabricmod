@@ -1,6 +1,10 @@
 # CastigoClasses — mod Fabric
 
-Companion client **0.1.0-beta.5** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin). I VFX client richiedono il plugin 0.1.0-beta.3 con CastigoCore beta.9; i punti attributo richiedono almeno il plugin beta.2. Con beta.1 rimangono disponibili HUD e skill, senza pulsanti di assegnazione (protocollo v1 compatibile).
+Companion client **0.1.0-beta.6** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin). I VFX client richiedono il plugin 0.1.0-beta.3 con CastigoCore beta.9; i punti attributo richiedono almeno il plugin beta.2. Con beta.1 rimangono disponibili HUD e skill, senza pulsanti di assegnazione (protocollo v1 compatibile).
+
+## Orison beta.6
+
+Nuovo effetto di guarigione sul destinatario e audio incluso nella mod: [installazione, preset e collaudo](docs/ORISON-VFX.md).
 
 ## Aggiornamento beta.5
 
@@ -13,7 +17,7 @@ Il plugin **beta.4** aggiunge cinque discipline con 40 abilità. La mod beta.5 r
 - Minecraft **26.2**, Java **25**.
 - Fabric Loader **0.19.5** o superiore.
 - Fabric API **0.161.0+26.2**.
-- Sostituisci il vecchio JAR della mod con `CastigoClasses-Fabric-0.1.0-beta.5.jar` nella cartella `mods` del profilo Minecraft 26.2. Mantieni Fabric API; non lasciare entrambe le versioni della mod nella cartella.
+- Sostituisci il vecchio JAR della mod con `CastigoClasses-Fabric-0.1.0-beta.6.jar` nella cartella `mods` del profilo Minecraft 26.2. Mantieni Fabric API; non lasciare entrambe le versioni della mod nella cartella.
 
 Il server rimane Purpur e deve avere CastigoCore e CastigoClasses. Questa mod è solo client.
 

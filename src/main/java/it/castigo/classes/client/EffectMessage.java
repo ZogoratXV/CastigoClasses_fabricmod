@@ -5,8 +5,8 @@ import java.util.UUID;
 
 /** Strict bounds before a network message can allocate animation/render work. */
 public record EffectMessage(String world,Shape shape,Position from,Position at,int points,int durationTicks,
-                            double radius,Particles particles,Audio sound) {
-    public enum Shape { BURST, LINE, RING, SPIRAL }
+                            double radius,Particles particles,Audio sound,UUID target) {
+    public enum Shape { BURST, LINE, RING, SPIRAL, HEALING_BEAM }
     public record Position(double x,double y,double z) {
         public double distanceSquared(Position p) { return square(x-p.x)+square(y-p.y)+square(z-p.z); }
     }
@@ -23,7 +23,8 @@ public record EffectMessage(String world,Shape shape,Position from,Position at,i
                 integer(o,"points",2,32),integer(o,"durationTicks",1,40),number(o,"radius",0.1,12),
                 new Particles(p.get("enabled").getAsBoolean(),identifier(p,"id"),integer(p,"count",1,32),number(p,"spread",0,2),
                         p.has("color")?integer(p,"color",0,0xFFFFFF):0xFFFFFF,p.has("size")?(float)number(p,"size",0.05,4):1.2f),
-                new Audio(s.get("enabled").getAsBoolean(),identifier(s,"id"),category,(float)number(s,"volume",0,2),(float)number(s,"pitch",0.5,2)));
+                new Audio(s.get("enabled").getAsBoolean(),identifier(s,"id"),category,(float)number(s,"volume",0,2),(float)number(s,"pitch",0.5,2)),
+                o.has("target")?UUID.fromString(o.get("target").getAsString()):null);
     }
     public int sampleCount() { return shape==Shape.BURST?1:points; }
     public int samplesThroughTick(int age) {
@@ -33,7 +34,7 @@ public record EffectMessage(String world,Shape shape,Position from,Position at,i
     public Position sample(int index) {
         double fraction=index/(double)(points-1);
         return switch(shape) {
-            case BURST -> at;
+            case BURST,HEALING_BEAM -> at;
             case LINE -> new Position(from.x+(at.x-from.x)*fraction,from.y+(at.y-from.y)*fraction,from.z+(at.z-from.z)*fraction);
             case RING -> new Position(at.x+Math.cos(2*Math.PI*index/points)*radius,at.y+0.15,at.z+Math.sin(2*Math.PI*index/points)*radius);
             case SPIRAL -> new Position(at.x+Math.cos(4*Math.PI*fraction)*radius,at.y+2*fraction,at.z+Math.sin(4*Math.PI*fraction)*radius);

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-beta.6 — 2026-10-07
+
+- Renderer Orison con doppi anelli, colonna verde e scintille ascendenti, agganciato al destinatario.
+- Audio OGG originale incluso nel JAR; generatore riproducibile nei sorgenti.
+- Parsing UUID e geometria con budget, rimozione su morte/despawn/cambio mondo; 20 test mod.
+
 ## 0.1.0-beta.5 — 2026-10-07
 
 - Icone skill PNG da resource pack tramite identificatori texture:namespace:textures/..., nella HUD e nella schermata di riordino.

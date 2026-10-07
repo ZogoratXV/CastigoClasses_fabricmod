@@ -20,7 +20,8 @@ public final class ClientEffects {
         final EffectMessage effect;
         final ParticleOptions particle;
         int age,index;
-        Animation(EffectMessage effect,ParticleOptions particle) { this.effect=effect;this.particle=particle; }
+        EffectMessage.Position center;
+        Animation(EffectMessage effect,ParticleOptions particle) { this.effect=effect;this.particle=particle;center=effect.at(); }
     }
     private ClientEffects() {}
     public static void clear() { active.clear();level=null;world=""; }
@@ -48,11 +49,26 @@ public final class ClientEffects {
         var observer=new EffectMessage.Position(client.player.getX(),client.player.getY(),client.player.getZ());
         for(var iterator=active.iterator();iterator.hasNext();) {
             Animation a=iterator.next();EffectMessage e=a.effect;
-            if(!e.near(observer,64)) { iterator.remove();continue; }
+            if(e.shape()==EffectMessage.Shape.HEALING_BEAM&&e.target()!=null) {
+                var target=client.level.getPlayerByUUID(e.target());
+                if(target==null||!target.isAlive()||target.isSpectator()) { iterator.remove();continue; }
+                a.center=new EffectMessage.Position(target.getX(),target.getY(),target.getZ());
+            }
+            if(e.shape()==EffectMessage.Shape.HEALING_BEAM?a.center.distanceSquared(observer)>64*64:!e.near(observer,64)) { iterator.remove();continue; }
             if(a.age==0&&e.sound().enabled()&&e.sound().volume()>0&&audioBudget>0) {
                 audioBudget--;
-                client.level.playLocalSound(e.at().x(),e.at().y(),e.at().z(),SoundEvent.createVariableRangeEvent(Identifier.parse(e.sound().id())),
+                client.level.playLocalSound(a.center.x(),a.center.y(),a.center.z(),SoundEvent.createVariableRangeEvent(Identifier.parse(e.sound().id())),
                         SoundSource.valueOf(e.sound().category()),e.sound().volume(),e.sound().pitch(),false);
+            }
+            if(e.shape()==EffectMessage.Shape.HEALING_BEAM) {
+                if(e.particles().enabled()&&a.age%2==0)for(int i=0;i<HealingBeam.SAMPLES&&budget>0;i++) {
+                    var point=HealingBeam.sample(a.age,e.durationTicks(),i,e.radius(),e.particles().color(),e.particles().size());
+                    budget--;
+                    client.level.addParticle(new DustParticleOptions(point.color(),Math.max(0.05f,point.size())),
+                            a.center.x()+point.x(),a.center.y()+point.y(),a.center.z()+point.z(),0,0.025,0);
+                }
+                if(++a.age>=e.durationTicks())iterator.remove();
+                continue;
             }
             int end=e.samplesThroughTick(a.age);
             for(;a.index<end;a.index++) {
