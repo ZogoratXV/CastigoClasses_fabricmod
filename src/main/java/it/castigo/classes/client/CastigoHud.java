@@ -88,12 +88,18 @@ public final class CastigoHud {
             ClientState.Skill skill=c.skill(order.get(i));if(skill==null)continue;
             int sx=x+i*SLOT;
             frame(g,sx,y,22,SLOT_HEIGHT,i==selected);
+            Identifier texture=skill.icon().startsWith("texture:")?Identifier.tryParse(skill.icon().substring(8)):null;
+            if(texture!=null&&mc.getResourceManager().getResource(texture).isPresent()) {
+                g.blit(texture,sx+3,y+3,sx+19,y+19,0f,1f,0f,1f);
+            } else {
+            if(ICONS.size()>2048)ICONS.clear();
             ItemStack icon=ICONS.computeIfAbsent(skill.icon(),id-> {
                 Identifier key=Identifier.tryParse(id);
                 Item item=key==null?Items.AMETHYST_SHARD:BuiltInRegistries.ITEM.getValue(key);
                 return new ItemStack(item==null||item==Items.AIR?Items.AMETHYST_SHARD:item);
             });
             g.item(icon,sx+3,y+3);
+            }
             g.fill(sx+4,y+19,sx+18,y+20,0xFF000000|skill.color());
             long remaining=s.remaining(skill.id());
             if(s.level<skill.unlockLevel()) {

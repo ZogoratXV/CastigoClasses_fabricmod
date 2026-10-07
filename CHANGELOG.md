@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-beta.5 — 2026-10-07
+
+- Icone skill PNG da resource pack tramite identificatori texture:namespace:textures/..., nella HUD e nella schermata di riordino.
+- Ripiego sull'icona vanilla quando il file manca; nessun download di asset dal protocollo delle skill.
+- Guida condivisa per GUI amministrativa, oggetti ItemsAdder, asset e VFX.
+
 ## 0.1.0-beta.4 — 2026-10-07
 
 - Motore VFX client per linee, anelli, spirali ed emissioni puntuali, comandato dagli eventi del plugin beta.3.

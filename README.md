@@ -1,15 +1,19 @@
 # CastigoClasses — mod Fabric
 
-Companion client **0.1.0-beta.4** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin). I VFX client richiedono il plugin 0.1.0-beta.3 con CastigoCore beta.9; i punti attributo richiedono almeno il plugin beta.2. Con beta.1 rimangono disponibili HUD e skill, senza pulsanti di assegnazione (protocollo v1 compatibile).
+Companion client **0.1.0-beta.5** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin). I VFX client richiedono il plugin 0.1.0-beta.3 con CastigoCore beta.9; i punti attributo richiedono almeno il plugin beta.2. Con beta.1 rimangono disponibili HUD e skill, senza pulsanti di assegnazione (protocollo v1 compatibile).
+
+## Aggiornamento beta.5
+
+Cure senza party, requisiti per oggetto vanilla/ItemsAdder, `/classe admin` e icone PNG personalizzate: [guida completa](docs/OGGETTI-ICONE-VFX.md). Aggiorna sia plugin sia mod alla beta.5 per le icone.
 
 ## Installazione
 
-Il plugin **beta.4** aggiunge cinque discipline con 40 abilità. Questa stessa mod beta.4 riceve nomi, icone, descrizioni e sblocchi dal server; non occorre sostituire nuovamente il JAR client. Vedi la [guida alle discipline](docs/DISCIPLINE.md). Il comportamento di combattimento è gestito dal server; la grafica dedicata delle nuove skill è rimandata.
+Il plugin **beta.4** aggiunge cinque discipline con 40 abilità. La mod beta.5 riceve nomi, icone, descrizioni e sblocchi dal server e aggiunge il rendering delle icone PNG. Vedi la [guida alle discipline](docs/DISCIPLINE.md). Il comportamento di combattimento è gestito dal server; la grafica dedicata delle nuove skill è rimandata.
 
 - Minecraft **26.2**, Java **25**.
 - Fabric Loader **0.19.5** o superiore.
 - Fabric API **0.161.0+26.2**.
-- Sostituisci il vecchio JAR della mod con `CastigoClasses-Fabric-0.1.0-beta.4.jar` nella cartella `mods` del profilo Minecraft 26.2. Mantieni Fabric API; non lasciare entrambe le versioni della mod nella cartella.
+- Sostituisci il vecchio JAR della mod con `CastigoClasses-Fabric-0.1.0-beta.5.jar` nella cartella `mods` del profilo Minecraft 26.2. Mantieni Fabric API; non lasciare entrambe le versioni della mod nella cartella.
 
 Il server rimane Purpur e deve avere CastigoCore e CastigoClasses. Questa mod è solo client.
 
