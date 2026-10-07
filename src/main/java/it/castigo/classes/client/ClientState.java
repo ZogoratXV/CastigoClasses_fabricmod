@@ -15,6 +15,7 @@ public final class ClientState {
     private final Map<String,ClassInfo> pending=new LinkedHashMap<>();
     public boolean enabled;
     public String name="",classId="",group="";
+    public String world="";
     public int level=1;
     public long xp,xpNext;
     public double health,maxHealth,resource,maxResource;
@@ -30,7 +31,7 @@ public final class ClientState {
     public long lastUpdate;
     public void clear() {
         enabled=false;classes.clear();pending.clear();slots=List.of();cooldownEnds.clear();stats.clear();lastUpdate=0;
-        clearPoints();combat.clear();
+        clearPoints();combat.clear();world="";
     }
     public ClassInfo currentClass() { return classes.get(classId); }
     public boolean active() { return enabled&&currentClass()!=null&&slots.size()==8&&System.currentTimeMillis()-lastUpdate<10000; }
@@ -47,6 +48,7 @@ public final class ClientState {
                 List<String> order=new ArrayList<>();o.getAsJsonArray("slots").forEach(e->order.add(e.getAsString()));
                 if(!SlotOrder.valid(order,c.skills().stream().map(Skill::id).toList()))return;
                 name=o.get("name").getAsString();classId=next;group=o.get("group").getAsString();
+                world=o.has("world")?o.get("world").getAsString():"";
                 level=o.get("level").getAsInt();xp=o.get("xp").getAsLong();xpNext=o.get("xpNext").getAsLong();
                 health=number(o,"health");maxHealth=number(o,"maxHealth");resource=number(o,"resource");maxResource=number(o,"maxResource");
                 slots=List.copyOf(order);stats.clear();o.getAsJsonObject("stats").entrySet().forEach(e->stats.put(e.getKey(),e.getValue().getAsDouble()));

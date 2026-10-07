@@ -1,13 +1,13 @@
 # CastigoClasses — mod Fabric
 
-Companion client **0.1.0-beta.3** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin). I punti attributo richiedono il plugin 0.1.0-beta.2. Con beta.1 rimangono disponibili HUD e skill, senza pulsanti di assegnazione (protocollo v1 compatibile).
+Companion client **0.1.0-beta.4** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin). I VFX client richiedono il plugin 0.1.0-beta.3 con CastigoCore beta.9; i punti attributo richiedono almeno il plugin beta.2. Con beta.1 rimangono disponibili HUD e skill, senza pulsanti di assegnazione (protocollo v1 compatibile).
 
 ## Installazione
 
 - Minecraft **26.2**, Java **25**.
 - Fabric Loader **0.19.5** o superiore.
 - Fabric API **0.161.0+26.2**.
-- Sostituisci il vecchio JAR della mod con `CastigoClasses-Fabric-0.1.0-beta.3.jar` nella cartella `mods` del profilo Minecraft 26.2. Mantieni Fabric API; non lasciare entrambe le versioni della mod nella cartella.
+- Sostituisci il vecchio JAR della mod con `CastigoClasses-Fabric-0.1.0-beta.4.jar` nella cartella `mods` del profilo Minecraft 26.2. Mantieni Fabric API; non lasciare entrambe le versioni della mod nella cartella.
 
 Il server rimane Purpur e deve avere CastigoCore e CastigoClasses. Questa mod è solo client.
 
@@ -36,7 +36,7 @@ In assenza del plugin o dopo il timeout tornano automaticamente tutti gli elemen
 ## Classi dinamiche
 
 Il client riceve il catalogo dal server. Nuove classi, sottoclassi, nomi, attributi, icone di oggetti Minecraft, costi e cooldown non richiedono una nuova build della mod. `/classe reload` sul server aggiorna i client collegati.
-Le animazioni della beta sono particelle e suoni vanilla inviati dal plugin, quindi anche giocatori senza questa mod li ricevono. Per nuovi renderer, asset esclusivi o interazioni client occorrerà estendere la mod.
+Il plugin beta.3 invia descrizioni degli effetti e questa mod li anima sul client: raggi, anelli, spirali ed emissioni puntuali, con suoni posizionali. Tutti gli osservatori vicini con mod beta.4 ricevono gli eventi; i client senza la mod aggiornata non vedono né sentono i VFX delle skill. I preset usano asset Minecraft esistenti. Per nuove forme di rendering e asset esclusivi occorrerà estendere la mod.
 
 La mod invia richieste di attivazione, riordino e assegnazione di un punto; non decide i valori delle statistiche. Danno, cura, risorsa, sblocchi e cooldown vengono decisi dal server.
 In server senza plugin, dopo una disconnessione o in assenza di aggiornamenti per 10 secondi torna disponibile la hotbar vanilla. Gli elementi rispettano F1; la barra abilità è disabilitata in modalità spettatore.
@@ -90,3 +90,9 @@ Ogni totale è `base + crescita × (livello - 1) + punti assegnati × bonus per 
 | Difesa | Riduce il danno da entità con `danno × 100/(100+difesa)`, prima delle riduzioni vanilla |
 
 Le stesse formule usano sia la crescita automatica sia i punti assegnati. Il pannello mostra danno e velocità degli attributi Minecraft correnti, inclusi i modificatori applicabili: il danno finale di un colpo dipende anche da ricarica, critici, armatura e bersaglio. La riduzione mostrata riguarda solo la difesa MMO. Non si possono spendere punti quando il relativo contributo ha già raggiunto il limite.
+
+## VFX client e nuovo core
+
+[Configurazione VFX/suoni e aggiornamento](docs/VFX-CLIENT.md). La mod dichiara la propria capacità nel saluto e anima gli eventi inviati dal server, con limiti locali e pulizia al cambio mondo/disconnessione. Il server mantiene tutte le decisioni di combattimento.
+
+[Proposta delle cinque discipline e 40 abilità](docs/PROPOSTA-DISCIPLINE.md): documento di valutazione, non classi già implementate.

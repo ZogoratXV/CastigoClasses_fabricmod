@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-beta.4 — 2026-10-07
+
+- Motore VFX client per linee, anelli, spirali ed emissioni puntuali, comandato dagli eventi del plugin beta.3.
+- Audio posizionale, colore/dimensione/quantità/durata configurabili dal server.
+- Validazione degli eventi e budget per animazioni, particelle e suoni; pulizia al cambio mondo/disconnessione.
+- Negoziazione clientVfx compatibile con protocollo v1 e server precedenti; HUD e punti attributo conservati.
+
 ## 0.1.0-beta.3 — 2026-10-07
 
 - Menu K diviso in Attributi e Disposizione skill, mantenendo il tema medievale.

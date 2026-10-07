@@ -26,7 +26,8 @@ public final class CastigoClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(ClassesPayload.TYPE,(payload,context)->context.client().execute(()-> {
             try {
                 JsonObject o=JsonParser.parseString(payload.json()).getAsJsonObject();if(o.get("v").getAsInt()!=1)return;
-                if(o.get("type").getAsString().equals("feedback")) {
+                if(o.get("type").getAsString().equals("vfx"))ClientEffects.receive(o,context.client());
+                else if(o.get("type").getAsString().equals("feedback")) {
                     if(context.client().player!=null)context.client().player.sendOverlayMessage(Component.literal(o.get("message").getAsString()));
                 } else STATE.receive(o);
             } catch(RuntimeException ignored) { /* Unknown or malformed server data is ignored. */ }
@@ -37,6 +38,7 @@ public final class CastigoClient implements ClientModInitializer {
         toggle=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.castigoclasses.toggle",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_R,category));
         editor=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.castigoclasses.editor",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_K,category));
         ClientTickEvents.END_CLIENT_TICK.register(client-> {
+            ClientEffects.tick(client);
             if(client.player==null)return;
             if(!STATE.active()&&++handshakeTicks>=40) { handshakeTicks=0;request("hello",new JsonObject()); }
             while(toggle.consumeClick()) {
@@ -72,10 +74,11 @@ public final class CastigoClient implements ClientModInitializer {
             if(STATE.active()&&!Minecraft.getInstance().gui.hud.isHidden())CastigoHud.portrait(graphics);
         });
     }
-    private static void reset() { STATE.clear();skillMode=false;handshakeTicks=35; }
+    private static void reset() { STATE.clear();ClientEffects.clear();skillMode=false;handshakeTicks=35; }
     public static boolean isSkillMode() { return skillMode&&STATE.active(); }
     public static void request(String type,JsonObject o) {
         if(Minecraft.getInstance().getConnection()==null||!ClientPlayNetworking.canSend(ClassesPayload.TYPE))return;
+        if(type.equals("hello"))o.addProperty("clientVfx",1);
         o.addProperty("v",1);o.addProperty("type",type);ClientPlayNetworking.send(new ClassesPayload(o.toString()));
     }
     public static void reorder(List<String> slots) {
