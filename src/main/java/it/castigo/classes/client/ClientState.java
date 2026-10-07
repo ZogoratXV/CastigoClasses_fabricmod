@@ -20,10 +20,17 @@ public final class ClientState {
     public double health,maxHealth,resource,maxResource;
     public List<String> slots=List.of();
     public final Map<String,Double> stats=new LinkedHashMap<>();
+    public boolean statPointSystem;
+    public int availablePoints,earnedPoints;
+    public final Map<String,Double> allocatedPoints=new LinkedHashMap<>();
+    public final Map<String,Double> pointGains=new LinkedHashMap<>();
+    public final Map<String,Double> combat=new LinkedHashMap<>();
+    public final Set<String> allocatable=new HashSet<>();
     public final Map<String,Long> cooldownEnds=new HashMap<>();
     public long lastUpdate;
     public void clear() {
         enabled=false;classes.clear();pending.clear();slots=List.of();cooldownEnds.clear();stats.clear();lastUpdate=0;
+        clearPoints();combat.clear();
     }
     public ClassInfo currentClass() { return classes.get(classId); }
     public boolean active() { return enabled&&currentClass()!=null&&slots.size()==8&&System.currentTimeMillis()-lastUpdate<10000; }
@@ -43,6 +50,14 @@ public final class ClientState {
                 level=o.get("level").getAsInt();xp=o.get("xp").getAsLong();xpNext=o.get("xpNext").getAsLong();
                 health=number(o,"health");maxHealth=number(o,"maxHealth");resource=number(o,"resource");maxResource=number(o,"maxResource");
                 slots=List.copyOf(order);stats.clear();o.getAsJsonObject("stats").entrySet().forEach(e->stats.put(e.getKey(),e.getValue().getAsDouble()));
+                clearPoints();readNumbers(o,"combat",combat);
+                if(o.has("statPoints")&&o.get("statPoints").isJsonObject()) {
+                    JsonObject points=o.getAsJsonObject("statPoints");
+                    availablePoints=(int)number(points,"available");earnedPoints=(int)number(points,"earned");
+                    readNumbers(points,"allocated",allocatedPoints);readNumbers(points,"perPoint",pointGains);
+                    if(points.has("canAllocate"))points.getAsJsonArray("canAllocate").forEach(e->allocatable.add(e.getAsString()));
+                    statPointSystem=true;
+                }
                 cooldownEnds.clear();long now=System.currentTimeMillis();
                 o.getAsJsonObject("cooldowns").entrySet().forEach(e->cooldownEnds.put(e.getKey(),now+Math.max(0,Math.min(86_400_000,e.getValue().getAsLong()))));
                 lastUpdate=now;enabled=true;
@@ -53,6 +68,15 @@ public final class ClientState {
     }
     private static double number(JsonObject o,String key) {
         double n=o.get(key).getAsDouble();return Double.isFinite(n)?Math.max(0,n):0;
+    }
+    private void clearPoints() {
+        statPointSystem=false;availablePoints=0;earnedPoints=0;allocatedPoints.clear();pointGains.clear();allocatable.clear();
+    }
+    private static void readNumbers(JsonObject o,String key,Map<String,Double> target) {
+        target.clear();
+        if(o.has(key)&&o.get(key).isJsonObject())o.getAsJsonObject(key).entrySet().forEach(e-> {
+            double n=e.getValue().getAsDouble();if(Double.isFinite(n)&&n>=0)target.put(e.getKey(),n);
+        });
     }
     public long remaining(String id) { return Math.max(0,cooldownEnds.getOrDefault(id,0L)-System.currentTimeMillis()); }
 }

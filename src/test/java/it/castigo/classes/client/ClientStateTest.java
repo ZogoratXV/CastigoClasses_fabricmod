@@ -30,4 +30,20 @@ class ClientStateTest {
     @Test void invalidSlotsAreRejectedWithoutActivatingHud() {
         ClientState s=state();JsonObject o=packet();o.getAsJsonArray("slots").set(0,new JsonPrimitive("foreign"));s.receive(o);assertFalse(s.active());
     }
+    @Test void readsAuthoritativePointsAndEffectiveCombatValues() {
+        ClientState s=state();JsonObject o=packet();
+        o.add("statPoints",JsonParser.parseString("""
+            {"available":2,"earned":5,"allocated":{"strength":3},"perPoint":{"strength":1},"canAllocate":["strength","defense"]}
+            """));
+        o.add("combat",JsonParser.parseString("{\"attackDamage\":7.5,\"attackSpeed\":4.12,\"defenseReductionPercent\":10}"));
+        s.receive(o);assertTrue(s.statPointSystem);assertEquals(2,s.availablePoints);assertEquals(5,s.earnedPoints);
+        assertEquals(3,s.allocatedPoints.get("strength"));assertTrue(s.allocatable.contains("defense"));
+        assertEquals(7.5,s.combat.get("attackDamage"));
+        s.clear();assertFalse(s.statPointSystem);assertEquals(0,s.availablePoints);assertTrue(s.combat.isEmpty());
+    }
+    @Test void olderPluginDisablesPointControlsAndClearsPreviousAllocationState() {
+        ClientState s=state();s.statPointSystem=true;s.availablePoints=999;s.allocatable.add("strength");
+        s.receive(packet());assertTrue(s.active());assertFalse(s.statPointSystem);
+        assertEquals(0,s.availablePoints);assertTrue(s.allocatable.isEmpty());
+    }
 }

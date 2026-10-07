@@ -81,6 +81,9 @@ public final class CastigoClient implements ClientModInitializer {
     public static void reorder(List<String> slots) {
         JsonObject o=new JsonObject();JsonArray a=new JsonArray();slots.forEach(a::add);o.add("slots",a);request("reorder",o);
     }
+    public static void allocate(String attribute) {
+        JsonObject o=new JsonObject();o.addProperty("attribute",attribute);request("allocate",o);
+    }
     public static boolean intercept(KeyEvent event,int action) {
         Minecraft client=Minecraft.getInstance();
         if(!isSkillMode()||client.player==null||client.player.isSpectator()||client.gui.screen()!=null||client.gui.overlay()!=null)return false;

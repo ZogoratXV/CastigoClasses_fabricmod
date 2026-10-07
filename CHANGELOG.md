@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-beta.3 — 2026-10-07
+
+- Menu K diviso in Attributi e Disposizione skill, mantenendo il tema medievale.
+- Pulsanti di assegnazione, saldo, punti spesi, bonus ed effetti reali ricevuti dal server.
+- Compatibilità con stati precedenti senza punti attributo.
+- Versione risorse collegata alla versione di build per evitare metadati obsoleti.
+- Build e 10 test automatici superati; verifica in gioco da effettuare.
+
 ## 0.1.0-beta.2 — 2026-10-06
 
 - HUD compatta medievale fantasy: cornici bronzo/oro, testi pergamena, pannello 172×64 e ritratto 24×24.
