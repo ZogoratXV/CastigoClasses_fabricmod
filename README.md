@@ -4,6 +4,8 @@ Companion client **0.1.0-beta.4** per [CastigoClasses plugin](https://github.com
 
 ## Installazione
 
+Il plugin **beta.4** aggiunge cinque discipline con 40 abilità. Questa stessa mod beta.4 riceve nomi, icone, descrizioni e sblocchi dal server; non occorre sostituire nuovamente il JAR client. Vedi la [guida alle discipline](docs/DISCIPLINE.md). Il comportamento di combattimento è gestito dal server; la grafica dedicata delle nuove skill è rimandata.
+
 - Minecraft **26.2**, Java **25**.
 - Fabric Loader **0.19.5** o superiore.
 - Fabric API **0.161.0+26.2**.
