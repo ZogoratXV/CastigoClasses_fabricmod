@@ -2,5 +2,6 @@
   "key.category.castigoclasses.controls": "Castigo Classes",
   "key.castigoclasses.toggle": "Alterna hotbar / barra abilità",
   "key.castigoclasses.editor": "Personaggio e disposizione abilità",
-  "castigoclasses.unavailable": "Il server non ha ancora attivato Castigo Classes."
+  "castigoclasses.unavailable": "Il server non ha ancora attivato Castigo Classes.",
+  "key.castigoclasses.vfx_editor": "Editor VFX"
 }

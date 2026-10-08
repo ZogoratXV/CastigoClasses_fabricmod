@@ -29,9 +29,14 @@ public final class ClientState {
     public final Set<String> allocatable=new HashSet<>();
     public final Map<String,Long> cooldownEnds=new HashMap<>();
     public long lastUpdate;
+    public String castingName="";
+    public long castingTotal,castingRemaining,castingReceived;
+    public boolean vfxAdmin;
+    public double castingProgress(long now) { return castingTotal<=0?0:Math.max(0,Math.min(1,1-(castingRemaining-Math.max(0,now-castingReceived))/(double)castingTotal)); }
     public void clear() {
         enabled=false;classes.clear();pending.clear();slots=List.of();cooldownEnds.clear();stats.clear();lastUpdate=0;
         clearPoints();combat.clear();world="";
+        castingName="";castingTotal=0;vfxAdmin=false;
     }
     public ClassInfo currentClass() { return classes.get(classId); }
     public boolean active() { return enabled&&currentClass()!=null&&slots.size()==8&&System.currentTimeMillis()-lastUpdate<10000; }
@@ -63,6 +68,13 @@ public final class ClientState {
                 cooldownEnds.clear();long now=System.currentTimeMillis();
                 o.getAsJsonObject("cooldowns").entrySet().forEach(e->cooldownEnds.put(e.getKey(),now+Math.max(0,Math.min(86_400_000,e.getValue().getAsLong()))));
                 lastUpdate=now;enabled=true;
+                castingName="";castingTotal=0;vfxAdmin=o.has("vfxAdmin")&&o.get("vfxAdmin").getAsBoolean();
+                if(o.has("casting")&&o.getAsJsonObject("casting").has("name")) {
+                    var cast=o.getAsJsonObject("casting");long total=cast.get("totalMs").getAsLong(),remaining=cast.get("remainingMs").getAsLong();
+                    if(total>0&&total<=10000&&remaining>=0&&remaining<=total) {
+                        castingName=cast.get("name").getAsString();castingTotal=total;castingRemaining=remaining;castingReceived=now;
+                    }
+                }
             }
             case "disabled" -> clear();
             default -> { }

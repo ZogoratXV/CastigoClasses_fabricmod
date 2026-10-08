@@ -23,6 +23,12 @@ class ClientStateTest {
         ClientState s=state();s.receive(packet());assertTrue(s.active());assertEquals("Fede",s.currentClass().resourceName());
         assertEquals("s7",s.slots.getFirst());assertEquals("paladino",s.group);assertTrue(s.remaining("s7")>0);
     }
+    @Test void castingProgressInterpolatesAndStopsWhenServerClearsIt() {
+        var state=state();var packet=packet();packet.add("casting",JsonParser.parseString("{\"name\":\"Cura\",\"totalMs\":1500,\"remainingMs\":1000}"));
+        state.receive(packet);assertEquals(1/3.0,state.castingProgress(state.castingReceived),1e-9);
+        assertEquals(2/3.0,state.castingProgress(state.castingReceived+500),1e-9);assertEquals(1,state.castingProgress(state.castingReceived+5000));
+        state.receive(packet());assertEquals(0,state.castingTotal);assertEquals("",state.castingName);
+    }
     @Test void noServerOrStaleConnectionCannotOverrideVanillaHotbar() {
         ClientState s=state();assertFalse(s.active());s.receive(packet());s.lastUpdate-=11000;assertFalse(s.active());
         s.clear();assertFalse(s.active());assertTrue(s.classes.isEmpty());

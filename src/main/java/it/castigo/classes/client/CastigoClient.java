@@ -18,7 +18,7 @@ import java.util.List;
 public final class CastigoClient implements ClientModInitializer {
     public static final ClientState STATE=new ClientState();
     public static boolean skillMode;
-    public static KeyMapping toggle,editor;
+    public static KeyMapping toggle,editor,vfxEditor;
     private static int handshakeTicks;
     @Override public void onInitializeClient() {
         PayloadTypeRegistry.clientboundPlay().register(ClassesPayload.TYPE,ClassesPayload.CODEC);
@@ -27,7 +27,9 @@ public final class CastigoClient implements ClientModInitializer {
             try {
                 JsonObject o=JsonParser.parseString(payload.json()).getAsJsonObject();if(o.get("v").getAsInt()!=1)return;
                 if(o.get("type").getAsString().equals("vfx"))ClientEffects.receive(o,context.client());
-                else if(o.get("type").getAsString().equals("feedback")) {
+                else if(o.get("type").getAsString().equals("vfx_editor")) {
+                    if(context.client().gui.screen() instanceof VfxEditorScreen screen)screen.receive(o);
+                } else if(o.get("type").getAsString().equals("feedback")) {
                     if(context.client().player!=null)context.client().player.sendOverlayMessage(Component.literal(o.get("message").getAsString()));
                 } else STATE.receive(o);
             } catch(RuntimeException ignored) { /* Unknown or malformed server data is ignored. */ }
@@ -37,6 +39,7 @@ public final class CastigoClient implements ClientModInitializer {
         KeyMapping.Category category=KeyMapping.Category.register(Identifier.fromNamespaceAndPath("castigoclasses","controls"));
         toggle=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.castigoclasses.toggle",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_R,category));
         editor=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.castigoclasses.editor",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_K,category));
+        vfxEditor=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.castigoclasses.vfx_editor",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_F8,category));
         ClientTickEvents.END_CLIENT_TICK.register(client-> {
             ClientEffects.tick(client);
             if(client.player==null)return;
@@ -46,6 +49,7 @@ public final class CastigoClient implements ClientModInitializer {
                 else if(!STATE.active())client.player.sendOverlayMessage(Component.translatable("castigoclasses.unavailable"));
             }
             while(editor.consumeClick())if(client.gui.screen()==null&&STATE.active())client.gui.setScreen(new SkillScreen());
+            while(vfxEditor.consumeClick())if(client.gui.screen()==null&&STATE.active())client.gui.setScreen(new VfxEditorScreen());
             if(!STATE.active()||client.player.isSpectator())skillMode=false;
         });
         HudElementRegistry.replaceElement(VanillaHudElements.HOTBAR,original->(graphics,delta)-> {
@@ -71,7 +75,7 @@ public final class CastigoClient implements ClientModInitializer {
             } finally { graphics.pose().popMatrix(); }
         });
         HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT,Identifier.fromNamespaceAndPath("castigoclasses","portrait"),(graphics,delta)-> {
-            if(STATE.active()&&!Minecraft.getInstance().gui.hud.isHidden())CastigoHud.portrait(graphics);
+            if(STATE.active()&&!Minecraft.getInstance().gui.hud.isHidden()) { CastigoHud.portrait(graphics);CastigoHud.casting(graphics); }
         });
     }
     private static void reset() { STATE.clear();ClientEffects.clear();skillMode=false;handshakeTicks=35; }

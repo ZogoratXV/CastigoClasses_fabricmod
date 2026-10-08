@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-beta.7 — 2026-10-08
+
+- Barra casting dorata con nome skill e riempimento da sinistra a destra.
+- Editor F8 rimappabile con selezione classe/skill/fase, parametri grafici/audio e anteprima locale nel mondo.
+- Progetti JSON locali e applicazione/ripristino server con risposta esplicita e permesso admin.
+- 23 test mod; documentati i limiti rispetto a Photon e il collaudo visivo ancora necessario.
+
 ## 0.1.0-beta.6 — 2026-10-07
 
 - Renderer Orison con doppi anelli, colonna verde e scintille ascendenti, agganciato al destinatario.

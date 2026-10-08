@@ -78,6 +78,14 @@ public final class CastigoHud {
     }
 
     public static int barX(GuiGraphicsExtractor g) { return (g.guiWidth()-BAR_WIDTH)/2; }
+    public static void casting(GuiGraphicsExtractor g) {
+        var s=CastigoClient.STATE;if(s.castingTotal<=0||Minecraft.getInstance().player==null||Minecraft.getInstance().player.isSpectator())return;
+        int x=(g.guiWidth()-182)/2,y=g.guiHeight()-59;
+        g.fill(x-1,y-1,x+183,y+7,0xFF655031);g.fill(x,y,x+182,y+6,0xFF17130E);
+        int fill=(int)(182*s.castingProgress(System.currentTimeMillis()));
+        g.fill(x,y,x+fill,y+6,0xFFD5AE57);g.fill(x,y,x+fill,y+1,0xFFFFE9A5);
+        g.centeredText(Minecraft.getInstance().font,trim(s.castingName,180),x+91,y-11,0xFFFFE9A5);
+    }
     public static void bar(GuiGraphicsExtractor g,List<String> order,int selected) {
         slots(g,order,barX(g),g.guiHeight()-24,selected);
     }
