@@ -14,9 +14,9 @@ import java.util.*;
 /** In-world editor: preview is local; applying to the server requires admin permission. */
 public final class VfxEditorScreen extends Screen {
     private static final String[] STAGES={"CAST","TRAIL","IMPACT","TELEGRAPH","HIT"};
-    private static final String[] SHAPES={"BURST","LINE","RING","SPIRAL","HEALING_BEAM"};
-    private static final String[][] KEYS={{"duration","radius","points","color","size","spread"},{"particle","count","sound","volume","pitch"}};
-    private static final String[][] LABELS={{"Durata (1–40 tick)","Raggio (0,1–12)","Punti (2–32)","Colore RGB","Dimensione (0,05–4)","Dispersione (0–2)"},{"Particella Bukkit","Quantità (1–32)","ID suono","Volume (0–2)","Tono (0,5–2)"}};
+    private static final String[] SHAPES={"BURST","LINE","RING","SPIRAL","HEALING_BEAM","MESH_RING","MESH_COLUMN"};
+    private static final String[][] KEYS={{"duration","radius","points","color","size","spread"},{"particle","count","sound","volume","pitch"},{"height","opacity","rotation","scroll","rings","ringGap"},{"fadeIn","fadeOut","columnRadius","ringTexture","columnTexture","tint"}};
+    private static final String[][] LABELS={{"Durata (1–40 tick)","Raggio (0,1–12)","Punti (2–32)","Colore RGB","Dimensione (0,05–4)","Dispersione (0–2)"},{"Particella Bukkit","Quantità (1–32)","ID suono","Volume (0–2)","Tono (0,5–2)"},{"Altezza (0,1–12)","Opacità (0–1)","Rotazione °/s ±720","Scorrimento ±4","Anelli (0–4)","Distanza anelli (0–3)"},{"Entrata (0–0,5 vita)","Uscita (0–0,5 vita)","Raggio colonna ×0,05–1","Texture anelli PNG","Texture colonna PNG","Colore mesh RGB/auto"}};
     private final Map<String,EditBox> fields=new LinkedHashMap<>();
     private String classId,skillId,status="Carica dal server o crea un preset locale";
     private JsonObject draft=VfxDraft.defaults();
@@ -30,15 +30,16 @@ public final class VfxEditorScreen extends Screen {
     private void button(String text,int x,int y,int w,Runnable run) { addRenderableWidget(Button.builder(Component.literal(text),b->action(run)).bounds(x,y,w,17).build()); }
     private void action(Runnable run) { try { capture();run.run(); } catch(Exception e) { status="Errore: "+e.getMessage(); } }
     @Override protected void init() {
+        draft.add("mesh",MeshSettings.read(draft.has("mesh")?draft.getAsJsonObject("mesh"):null).json());
         fields.clear();int x=left(),w=panelWidth(),half=(w-4)/2;
         button("Classe: "+classId,x,5,half,()->select(true));button("Skill: "+skillId,x+half+4,5,half,()->select(false));
         button("Fase: "+STAGES[stage],x,24,half,()->{stage=(stage+1)%STAGES.length;rebuildWidgets();});
         button("Forma: "+draft.get("shape").getAsString(),x+half+4,24,half,()->{int i=Arrays.asList(SHAPES).indexOf(draft.get("shape").getAsString());draft.addProperty("shape",SHAPES[(i+1)%SHAPES.length]);rebuildWidgets();});
-        button("Pagina "+(page+1)+"/2",x,43,half,()->{page=1-page;rebuildWidgets();});
+        button("Pagina "+(page+1)+"/4",x,43,half,()->{page=(page+1)%4;rebuildWidgets();});
         button(self?"Anteprima: su me":"Anteprima: mira",x+half+4,43,half,()->{self=!self;rebuildWidgets();});
         for(int i=0;i<KEYS[page].length;i++) {
             String key=KEYS[page][i];int bx=x+(i%2)*(half+4),by=73+(i/2)*28;
-            var field=new EditBox(font,bx,by,half,15,Component.literal(LABELS[page][i]));field.setMaxLength(160);field.setValue(draft.get(key).getAsString());fields.put(key,field);addRenderableWidget(field);
+            var field=new EditBox(font,bx,by,half,15,Component.literal(LABELS[page][i]));field.setMaxLength(160);field.setValue((page>=2?draft.getAsJsonObject("mesh"):draft).get(key).getAsString());fields.put(key,field);addRenderableWidget(field);
         }
         int y=Math.max(159,height-77);
         button("Effetto: "+on("enabled"),x,y,half,()->toggle("enabled"));button("Particelle: "+on("particlesEnabled"),x+half+4,y,half,()->toggle("particlesEnabled"));
@@ -52,8 +53,9 @@ public final class VfxEditorScreen extends Screen {
     private void capture() {
         for(var entry:fields.entrySet()) {
             String key=entry.getKey(),value=entry.getValue().getValue().trim();
-            if(Set.of("color","particle","sound").contains(key))draft.addProperty(key,value);
-            else { double n=Double.parseDouble(value);if(!Double.isFinite(n))throw new IllegalArgumentException("Numero non valido");draft.addProperty(key,n); }
+            var destination=page>=2?draft.getAsJsonObject("mesh"):draft;
+            if(Set.of("color","particle","sound","ringTexture","columnTexture","tint").contains(key))destination.addProperty(key,value);
+            else { double n=Double.parseDouble(value);if(!Double.isFinite(n))throw new IllegalArgumentException("Numero non valido");destination.addProperty(key,n); }
         }
     }
     private void select(boolean changeClass) {
@@ -104,3 +106,5 @@ public final class VfxEditorScreen extends Screen {
         g.text(font,CastigoHud.trim(status,width-12),6,height-90,0xFFFFE9A5);
     }
 }
+
+

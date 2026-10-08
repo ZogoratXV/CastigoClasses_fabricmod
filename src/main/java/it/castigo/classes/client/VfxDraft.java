@@ -14,7 +14,7 @@ public final class VfxDraft {
             """).getAsJsonObject();
     }
     public static JsonObject packet(JsonObject d,String world,EffectMessage.Position from,EffectMessage.Position at,UUID target) {
-        JsonObject o=new JsonObject();o.addProperty("world",world);o.addProperty("shape",d.get("shape").getAsString());
+        JsonObject o=new JsonObject();o.add("mesh",MeshSettings.read(d.has("mesh")?d.getAsJsonObject("mesh"):null).json());o.addProperty("world",world);o.addProperty("shape",d.get("shape").getAsString());
         o.add("from",position(from));o.add("at",position(at));o.add("points",d.get("points"));o.add("durationTicks",d.get("duration"));o.add("radius",d.get("radius"));
         JsonObject p=new JsonObject();p.add("enabled",d.get("particlesEnabled"));p.addProperty("id","minecraft:"+d.get("particle").getAsString().toLowerCase(Locale.ROOT));
         p.add("count",d.get("count"));p.add("spread",d.get("spread"));
@@ -41,3 +41,4 @@ public final class VfxDraft {
         var draft=JsonParser.parseString(Files.readString(file)).getAsJsonObject();validate(draft);return draft;
     }
 }
+

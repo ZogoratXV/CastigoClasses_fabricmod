@@ -21,6 +21,7 @@ public final class CastigoClient implements ClientModInitializer {
     public static KeyMapping toggle,editor,vfxEditor;
     private static int handshakeTicks;
     @Override public void onInitializeClient() {
+        MeshRenderer.register();
         PayloadTypeRegistry.clientboundPlay().register(ClassesPayload.TYPE,ClassesPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(ClassesPayload.TYPE,ClassesPayload.CODEC);
         ClientPlayNetworking.registerGlobalReceiver(ClassesPayload.TYPE,(payload,context)->context.client().execute(()-> {
@@ -82,7 +83,7 @@ public final class CastigoClient implements ClientModInitializer {
     public static boolean isSkillMode() { return skillMode&&STATE.active(); }
     public static void request(String type,JsonObject o) {
         if(Minecraft.getInstance().getConnection()==null||!ClientPlayNetworking.canSend(ClassesPayload.TYPE))return;
-        if(type.equals("hello")) { o.addProperty("clientVfx",1);o.addProperty("healingBeam",1); }
+        if(type.equals("hello")) { o.addProperty("clientVfx",1);o.addProperty("healingBeam",1);o.addProperty("meshVfx",1); }
         o.addProperty("v",1);o.addProperty("type",type);ClientPlayNetworking.send(new ClassesPayload(o.toString()));
     }
     public static void reorder(List<String> slots) {
@@ -103,3 +104,4 @@ public final class CastigoClient implements ClientModInitializer {
         return false;
     }
 }
+

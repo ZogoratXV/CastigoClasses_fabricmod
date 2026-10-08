@@ -1,6 +1,6 @@
 plugins { id 'net.fabricmc.fabric-loom' version '1.17.21' }
 group = 'it.castigo'
-version = '0.1.0-beta.7'
+version = '0.1.0-beta.8'
 repositories { mavenCentral() }
 dependencies {
     minecraft 'com.mojang:minecraft:26.2'
@@ -17,3 +17,4 @@ processResources {
     inputs.property('version', project.version)
     filesMatching('fabric.mod.json') { expand(version: project.version) }
 }
+
