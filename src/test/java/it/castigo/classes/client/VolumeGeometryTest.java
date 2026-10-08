@@ -22,7 +22,7 @@ class VolumeGeometryTest {
             assertTrue(a.stream().anyMatch(l->l.texture().endsWith("shard.png")));
             assertTrue(MeshGeometry.build(e,40,false).isEmpty());
             int near=a.stream().mapToInt(l->l.vertices().size()).sum(),far=MeshGeometry.build(e,8,true).stream().mapToInt(l->l.vertices().size()).sum();
-            assertTrue(far<near,shape);assertTrue(near<=1536,shape);
+            assertTrue(far<near,shape);assertTrue(near<=2048,shape);
         }
     }
     @Test void burstsHaveColorSeparationAndDispersingThreeDimensionalFragments() {

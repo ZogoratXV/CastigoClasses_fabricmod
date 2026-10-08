@@ -8,6 +8,15 @@ public final class MeshGeometry {
     public record Layer(String texture,List<Vertex> vertices) { public Layer { vertices=List.copyOf(vertices); } }
     private MeshGeometry() {}
     public static List<Layer> build(EffectMessage effect,double age,boolean distant) {
+        var result=new ArrayList<>(base(effect,age,distant));
+        if(effect.hasMesh()) {
+            var m=effect.mesh();double life=effect.handle()==null?age/effect.durationTicks():.5;
+            int rgb=m.tint().equals("auto")?effect.particles().color():Integer.parseInt(m.tint(),16);
+            result.addAll(AuthoredModels.build(effect,age,m.alpha(life),rgb,distant));
+        }
+        return List.copyOf(result);
+    }
+    private static List<Layer> base(EffectMessage effect,double age,boolean distant) {
         if(!effect.hasMesh())return List.of();
         var m=effect.mesh();double life=effect.handle()==null?age/effect.durationTicks():.5,alpha=m.alpha(life);
         if(alpha<=0)return List.of();

@@ -89,7 +89,12 @@ public final class ClientEffects {
             if(e.hasMesh()&&e.shape()!=EffectMessage.Shape.MESH_BEAM?a.center.distanceSquared(observer)>64*64:!e.near(observer,64)) { iterator.remove();continue; }
             if(a.age==0&&e.sound().enabled()&&e.sound().volume()>0&&audioBudget>0) {
                 audioBudget--;
-                client.level.playLocalSound(a.center.x(),a.center.y(),a.center.z(),SoundEvent.createVariableRangeEvent(Identifier.parse(e.sound().id())),
+                String sound=e.sound().id();
+                if(sound.startsWith("castigoclasses_audio:")) {
+                    String path=sound.substring(sound.indexOf(':')+1).replace('.','/');
+                    if(client.getResourceManager().getResource(Identifier.parse("castigoclasses_audio:sounds/"+path+".ogg")).isEmpty())sound="minecraft:block.amethyst_block.chime";
+                }
+                client.level.playLocalSound(a.center.x(),a.center.y(),a.center.z(),SoundEvent.createVariableRangeEvent(Identifier.parse(sound)),
                         SoundSource.valueOf(e.sound().category()),e.sound().volume(),e.sound().pitch(),false);
             }
             a.phase++;

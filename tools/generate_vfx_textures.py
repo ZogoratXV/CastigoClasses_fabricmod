@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/castigoclasses/textures/vfx'
 
-def png(path, size, alpha, preview=False):
+def png(path, size, alpha, preview=False, surface=False):
     def chunk(kind, data):
         return struct.pack('!I', len(data)) + kind + data + struct.pack('!I', zlib.crc32(kind + data))
     pixels = bytearray()
@@ -15,7 +15,7 @@ def png(path, size, alpha, preview=False):
         pixels.append(0)
         for x in range(size):
             a = round(255 * max(0, min(1, alpha((x+.5)/size, (y+.5)/size))))
-            pixels.extend(tuple(round(18+(c-18)*a/255) for c in (85,255,102))+(255,) if preview else (255,255,255,a))
+            pixels.extend(tuple(round(18+(c-18)*a/255) for c in (85,255,102))+(255,) if preview else (round(70+a*.72),)*3+(255,) if surface else (255,255,255,a))
     path.write_bytes(b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('!2I5B', size, size, 8, 6, 0, 0, 0))
                      + chunk(b'IDAT', zlib.compress(pixels, 9)) + chunk(b'IEND', b''))
     if not preview:
@@ -66,6 +66,24 @@ def cloud(u,v):
 def shard(u,v):
     return 1
 
+def faceted_energy(u,v):
+    u,v=(int(u*32)+.5)/32,(int(v*32)+.5)/32
+    edge=min(u,1-u,v,1-v)
+    fracture=abs((u*2+v*3)%1-.5)
+    return .95 if edge<.065 or fracture<.055 else .7 if u<v else .42
+
+def feather(u,v):
+    u,v=(int(u*32)+.5)/32,(int(v*32)+.5)/32
+    rib=abs(u-.5)<.06
+    veins=abs(((v+abs(u-.5)*.65)*8)%1-.5)<.12
+    return 1 if rib else .86 if veins else .28+.4*(1-abs(u-.5)*2)
+
+def crest(u,v):
+    x,y=abs(u-.5),abs(v-.5)
+    border=abs(x+y-.4)<.025
+    cross=(x<.065 and y<.3) or (y<.055 and x<.22)
+    return .95 if border or cross else .25 if x+y>.4 else .5
+
 def ribbon(u,v):
     # U along the stroke, V across it. Transparent borders hide the quad edges.
     return math.sin(math.pi*u)**.35*math.exp(-((v-.5)/.16)**2)
@@ -96,8 +114,9 @@ if __name__ == '__main__':
     png(ROOT/'rune_ring.png', 256, lambda u,v:seal(u,v,'arcane'))
     png(ROOT/'healing_column.png', 128, column)
     spells={'holy_seal':lambda u,v:seal(u,v,'holy'),'dark_seal':lambda u,v:seal(u,v,'dark'),
-            'nature_seal':lambda u,v:seal(u,v,'nature'),'ribbon':ribbon,'slash':slash,'flare':flare,'shield_grid':shield,'wave':wave,'lightning':lightning,'cloud':cloud,'shard':shard}
+            'nature_seal':lambda u,v:seal(u,v,'nature'),'ribbon':ribbon,'slash':slash,'flare':flare,'shield_grid':shield,'wave':wave,'lightning':lightning,'cloud':cloud,'shard':shard,'faceted_energy':faceted_energy}
     for name,fn in spells.items():png(ROOT/(name+'.png'),256,fn)
+    for name,fn in {'faceted_energy':faceted_energy,'seraph_feather':feather,'aegis_crest':crest}.items():png(ROOT/(name+'.png'),64,fn,surface=True)
     print('Created rune_ring.png and healing_column.png')
     if len(sys.argv)>1:
         preview=Path(sys.argv[1]);preview.mkdir(parents=True,exist_ok=True)

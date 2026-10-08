@@ -28,6 +28,7 @@ public final class CastigoClient implements ClientModInitializer {
             try {
                 JsonObject o=JsonParser.parseString(payload.json()).getAsJsonObject();if(o.get("v").getAsInt()!=1)return;
                 if(o.get("type").getAsString().equals("vfx"))ClientEffects.receive(o,context.client());
+                else if(o.get("type").getAsString().equals("weapon_motion"))WeaponAnimations.receive(o,context.client());
                 else if(o.get("type").getAsString().equals("vfx_stop"))ClientEffects.stop(o.get("handle").getAsString());
                 else if(o.get("type").getAsString().equals("vfx_editor")) {
                     if(context.client().gui.screen() instanceof VfxEditorScreen screen)screen.receive(o);
@@ -44,6 +45,7 @@ public final class CastigoClient implements ClientModInitializer {
         vfxEditor=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.castigoclasses.vfx_editor",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_F8,category));
         ClientTickEvents.END_CLIENT_TICK.register(client-> {
             ClientEffects.tick(client);
+            WeaponAnimations.tick(client);
             if(client.player==null)return;
             if(!STATE.active()&&++handshakeTicks>=40) { handshakeTicks=0;request("hello",new JsonObject()); }
             while(toggle.consumeClick()) {
@@ -80,7 +82,7 @@ public final class CastigoClient implements ClientModInitializer {
             if(STATE.active()&&!Minecraft.getInstance().gui.hud.isHidden()) { CastigoHud.portrait(graphics);CastigoHud.casting(graphics); }
         });
     }
-    private static void reset() { STATE.clear();ClientEffects.clear();skillMode=false;handshakeTicks=35; }
+    private static void reset() { STATE.clear();ClientEffects.clear();WeaponAnimations.clear();skillMode=false;handshakeTicks=35; }
     public static boolean isSkillMode() { return skillMode&&STATE.active(); }
     public static void request(String type,JsonObject o) {
         if(Minecraft.getInstance().getConnection()==null||!ClientPlayNetworking.canSend(ClassesPayload.TYPE))return;

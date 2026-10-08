@@ -36,7 +36,7 @@ class SpellGeometryTest {
                     assertTrue(Math.abs(v.x())<40&&Math.abs(v.y())<40&&Math.abs(v.z())<40);
                     assertTrue(v.u()>=0&&v.u()<=1&&v.v()>=0&&v.v()<=1);
                 }
-                assertTrue(vertices>0&&vertices<=1536,shape.name());assertEquals(0,vertices%4);
+                assertTrue(vertices>0&&vertices<=2048,shape.name());assertEquals(0,vertices%4);
             }
         }
     }
