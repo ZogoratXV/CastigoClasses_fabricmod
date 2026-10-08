@@ -18,11 +18,31 @@ public final class SpellGeometry {
         switch(e.shape()) {
             case MESH_THRUST -> {
                 P axis=new P(Math.sin(yaw),0,Math.cos(yaw)),side=new P(Math.cos(yaw),0,-Math.sin(yaw));
-                P start=new P(0,h*.6,0).add(axis.mul(.3)),end=start.add(axis.mul(r*(.3+.7*life)));
+                P up=new P(0,1,0);
+                double reach=r*(.25+.75*(1-Math.pow(1-life,3)));
+                P start=new P(0,h*.6,0).add(axis.mul(.3)),end=start.add(axis.mul(reach));
                 for(P normal:List.of(side,new P(0,1,0))) {
                     P offset=normal.mul(.1);quad(out,start.add(offset),end.add(offset),end.add(offset.mul(-1)),start.add(offset.mul(-1)),rgb,alpha);
                 }
-                texture=m.columnTexture();
+                var core=new Layer(m.columnTexture(),out);out=new ArrayList<>();
+                // Two corkscrew wakes frame the spearhead without hiding the weapon.
+                for(int arm=0;arm<2;arm++)for(int i=0;i<n;i++) {
+                    double t=i/(double)n,t1=(i+1)/(double)n;
+                    P a=thrustWake(start,axis,side,up,reach,t,life,arm),b=thrustWake(start,axis,side,up,reach,t1,life,arm);
+                    P w=side.mul(.035+.025*Math.sin(t*Math.PI));
+                    strip(out,a.add(w),b.add(w),b.add(w.mul(-1)),a.add(w.mul(-1)),(float)t,(float)t1,rgb,alpha*.8);
+                }
+                var wake=new Layer(m.columnTexture(),out);out=new ArrayList<>();
+                P base=end.add(axis.mul(-Math.min(.55,reach*.35)));
+                double width=Math.min(.22,r*.1);
+                P[] corners={base.add(side.mul(width)),base.add(up.mul(width)),base.add(side.mul(-width)),base.add(up.mul(-width))};
+                for(int i=0;i<4;i++)quad(out,corners[i],corners[(i+1)%4],end,end,i%2==0?rgb:lighten(rgb),alpha);
+                for(int i=0;i<(distant?5:12);i++) {
+                    double t=(i+.5)/12,phi=i*2.399+life*5;
+                    P p=start.add(axis.mul(reach*t)).add(side.mul(Math.cos(phi)*.28*life)).add(up.mul(Math.sin(phi)*.28*life));
+                    fragment(out,p,.018+.024*t,rgb,alpha*(.3+.7*t));
+                }
+                return List.of(core,wake,new Layer("castigoclasses:textures/vfx/shard.png",out));
             }
             case MESH_BEAM -> {
                 P start=new P(e.from().x()-e.at().x(),e.from().y()-e.at().y(),e.from().z()-e.at().z()),end=new P(0,0,0);
@@ -36,21 +56,42 @@ public final class SpellGeometry {
                 texture=m.columnTexture();
             }
             case MESH_SLASH -> {
-                // A curved blade ribbon sweeps through the attacker's facing direction.
-                double sweep=Math.PI*1.25,head=yaw+life*sweep-sweep*.5;
-                for(int i=0;i<n;i++) {
-                    double a=head-i*sweep/n,b=head-(i+1)*sweep/n,fade=alpha*(1-i/(double)n);
-                    strip(out,arc(a,r*.55,h*.35),arc(b,r*.55,h*.35),arc(b,r,h*.55),arc(a,r,h*.55),i/(float)n,(i+1)/(float)n,rgb,fade);
-                    strip(out,arc(a,r*.83,h*.50+.008),arc(b,r*.83,h*.50+.008),arc(b,r*.92,h*.53+.008),arc(a,r*.92,h*.53+.008),i/(float)n,(i+1)/(float)n,0xFFF1CF,fade*.85);
+                double sign=m.rotation()<0?-1:1,sweep=Math.PI*1.25;
+                double head=sign*(-.35+1.5*(1-Math.pow(1-life,3)));
+                // Three staggered crescents: broad colored blade, bright edge and trailing echo.
+                for(int band=0;band<3;band++)for(int i=0;i<n;i++) {
+                    double t=i/(double)n,a=head-sign*t*sweep-band*sign*.12,b=a-sign*sweep/n;
+                    double outer=r*(1-band*.095),inner=outer-r*(band==0?.32:.065)*(1-t*.8);
+                    double fade=alpha*Math.pow(1-t,1.35)*(band==2?.4:1);
+                    P a0=blade(a,inner,h,yaw,sign),b0=blade(b,inner,h,yaw,sign),b1=blade(b,outer,h,yaw,sign),a1=blade(a,outer,h,yaw,sign);
+                    strip(out,a0,b0,b1,a1,(float)t,(float)(t+1.0/n),band==1?lighten(rgb):rgb,fade);
+                    // A second face gives the cutting edge thickness from low viewing angles.
+                    if(band==0)strip(out,a1,b1,b1.add(new P(0,.055,0)),a1.add(new P(0,.055,0)),(float)t,(float)(t+1.0/n),rgb,fade*.7);
                 }
-                texture=m.columnTexture();
+                var blades=new Layer(m.columnTexture(),out);out=new ArrayList<>();
+                int sparks=distant?8:24;
+                for(int i=0;i<sparks;i++) {
+                    double seed=i*2.399,a=head-sign*(i%8)*.16;
+                    double travel=life*(.15+(i%5)*.12);
+                    P p=blade(a,r*(.78+travel),h,yaw,sign).add(new P(0,Math.sin(seed)*life*.45-life*life*.35,0));
+                    fragment(out,p,.022+.012*(i%3),i%3==0?lighten(rgb):rgb,alpha*(.45+.4*Math.sin(seed)*Math.sin(seed)));
+                }
+                return List.of(blades,new Layer("castigoclasses:textures/vfx/shard.png",out));
             }
             case MESH_SHIELD -> {
                 // Curved frontal wall, oriented with the protected character.
                 for(int j=0;j<4;j++)for(int i=0;i<n;i++) {
                     double a=yaw-Math.PI/3+i*Math.PI*2/3/n,b=yaw-Math.PI/3+(i+1)*Math.PI*2/3/n;
                     double y0=j*h/4,y1=(j+1)*h/4;
-                    quad(out,arc(a,r,y0),arc(b,r,y0),arc(b,r,y1),arc(a,r,y1),rgb,alpha*(.6+.4*Math.sin(Math.PI*(j+.5)/4)));
+                    // Map the grid across the whole barrier, rather than repeating it per tiny quad.
+                    int c=((int)(alpha*180)<<24)|(rgb&0xffffff);
+                    P[] p={arc(a,r,y0),arc(b,r,y0),arc(b,r,y1),arc(a,r,y1)};
+                    float[][] uv={{i/(float)n,j/4f},{(i+1)/(float)n,j/4f},{(i+1)/(float)n,(j+1)/4f},{i/(float)n,(j+1)/4f}};
+                    for(int k=0;k<4;k++)out.add(new Vertex((float)p[k].x,(float)p[k].y,(float)p[k].z,uv[k][0],uv[k][1],c));
+                    if(j==0||j==3) {
+                        double y=j==0?.025:h-.025;
+                        quad(out,arc(a,r,y-.025),arc(b,r,y-.025),arc(b,r,y+.025),arc(a,r,y+.025),lighten(rgb),alpha);
+                    }
                 }
                 texture=m.columnTexture();
             }
@@ -86,6 +127,28 @@ public final class SpellGeometry {
             default -> { return List.of(); }
         }
         return List.of(new Layer(texture,out));
+    }
+    private static int lighten(int rgb) {
+        int r=(rgb>>16)&255,g=(rgb>>8)&255,b=rgb&255;
+        return ((r+(255-r)/3)<<16)|((g+(255-g)/3)<<8)|(b+(255-b)/3);
+    }
+    private static P blade(double a,double r,double h,double yaw,double sign) {
+        // Height controls the silhouette: low sweep, diagonal cut, or near-vertical heavy cleave.
+        double tilt=h<.6?0:Math.toRadians(h>2.5?70:25);
+        double x=Math.sin(a)*r*Math.cos(tilt),z=Math.cos(a)*r;
+        double y=h*.5+Math.sin(a)*Math.min(h*.46,r*Math.sin(tilt))*sign;
+        return new P(x*Math.cos(yaw)+z*Math.sin(yaw),y,z*Math.cos(yaw)-x*Math.sin(yaw));
+    }
+    private static P thrustWake(P origin,P axis,P side,P up,double reach,double t,double life,int arm) {
+        double phi=t*Math.PI*3-life*7+arm*Math.PI,width=.22*Math.sin(t*Math.PI);
+        return origin.add(axis.mul(reach*t)).add(side.mul(Math.cos(phi)*width)).add(up.mul(Math.sin(phi)*width));
+    }
+    private static void fragment(List<Vertex> out,P p,double s,int rgb,double alpha) {
+        P a=p.add(new P(-s,-s,-s)),b=p.add(new P(s,-s,-s)),c=p.add(new P(s,s,-s)),d=p.add(new P(-s,s,-s));
+        P z=new P(0,0,s*2),aa=a.add(z),bb=b.add(z),cc=c.add(z),dd=d.add(z);
+        quad(out,a,b,c,d,rgb,alpha);quad(out,aa,dd,cc,bb,rgb,alpha);
+        quad(out,a,aa,bb,b,rgb,alpha);quad(out,d,c,cc,dd,lighten(rgb),alpha);
+        quad(out,a,d,dd,aa,rgb,alpha);quad(out,b,bb,cc,c,lighten(rgb),alpha);
     }
     private static P arc(double angle,double r,double y){return new P(Math.sin(angle)*r,y,Math.cos(angle)*r);}
     private static void plane(List<Vertex> out,double r,double y,double a,int rgb,double alpha) {

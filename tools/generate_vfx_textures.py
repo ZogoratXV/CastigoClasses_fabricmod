@@ -91,6 +91,15 @@ def ribbon(u,v):
 def slash(u,v):
     return math.sin(math.pi*u)**.2*math.exp(-((v-.5)/.23)**2)*(.65+.35*math.sin(u*math.pi*3)**2)
 
+def weapon_blade(u,v):
+    # Broad pixel-cut energy blade: a solid cutting face with torn, staggered inner streaks.
+    u,v=(int(u*64)+.5)/64,(int(v*32)+.5)/32
+    inner=.09+.09*math.sin(u*17)**2
+    if v<inner or v>.94:return 0
+    rim=min(1,(v-inner)*14,(.94-v)*20)
+    streak=.72+.28*math.sin(u*23+v*9)**2
+    return rim*streak*(1-u*.3)
+
 def flare(u,v):
     x,y=(u-.5)*2,(v-.5)*2;r=math.hypot(x,y)
     return .9*math.exp(-(r/.24)**2)+.5*math.exp(-(x/.025)**2-(y/.7)**2)+.5*math.exp(-(y/.025)**2-(x/.7)**2)
@@ -115,6 +124,7 @@ if __name__ == '__main__':
     png(ROOT/'healing_column.png', 128, column)
     spells={'holy_seal':lambda u,v:seal(u,v,'holy'),'dark_seal':lambda u,v:seal(u,v,'dark'),
             'nature_seal':lambda u,v:seal(u,v,'nature'),'ribbon':ribbon,'slash':slash,'flare':flare,'shield_grid':shield,'wave':wave,'lightning':lightning,'cloud':cloud,'shard':shard,'faceted_energy':faceted_energy}
+    spells['weapon_blade']=weapon_blade
     for name,fn in spells.items():png(ROOT/(name+'.png'),256,fn)
     for name,fn in {'faceted_energy':faceted_energy,'seraph_feather':feather,'aegis_crest':crest}.items():png(ROOT/(name+'.png'),64,fn,surface=True)
     print('Created rune_ring.png and healing_column.png')

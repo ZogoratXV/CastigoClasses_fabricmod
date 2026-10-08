@@ -8,6 +8,17 @@ import static org.junit.jupiter.api.Assertions.*;
 class SpellGeometryTest {
     private static final EffectMessage.Position ZERO=new EffectMessage.Position(0,0,0);
     private EffectMessage read(JsonObject d) { return EffectMessage.read(VfxDraft.packet(d,"11111111-1111-1111-1111-111111111111",new EffectMessage.Position(0,0,-8),ZERO,null)); }
+    @Test void weaponEffectsHaveVolumeParticlesAndDistanceReduction() {
+        for(String shape:java.util.List.of("MESH_SLASH","MESH_THRUST")) {
+            var d=VfxDraft.defaults();d.addProperty("shape",shape);d.addProperty("radius",2);
+            var e=read(d);var near=MeshGeometry.build(e,8,false);var far=MeshGeometry.build(e,8,true);
+            assertTrue(near.stream().anyMatch(l->l.texture().endsWith("shard.png")));
+            assertTrue(near.stream().mapToInt(l->l.vertices().size()).sum()>far.stream().mapToInt(l->l.vertices().size()).sum());
+            assertTrue(near.stream().flatMap(l->l.vertices().stream()).map(v->v.y()).distinct().count()>20);
+            assertNotEquals(near,MeshGeometry.build(e,12,false));
+            assertTrue(MeshGeometry.build(e,e.durationTicks(),false).isEmpty());
+        }
+    }
     @Test void everyShippedSkillDecodesAndRendersWithTexturesPresent() {
         var presets=JsonParser.parseReader(new InputStreamReader(getClass().getResourceAsStream("/skill-vfx-fixtures.json"),java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
         assertEquals(48,presets.size());int cues=0;

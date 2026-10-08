@@ -41,6 +41,18 @@ class VolumeGeometryTest {
             gallery.put(shape,frames);
         }
         Files.createDirectories(Path.of("build"));Files.writeString(Path.of("build/vfx-preview.json"),new Gson().toJson(gallery));
-        assertEquals(4,gallery.size());
+        var presets=JsonParser.parseReader(new java.io.InputStreamReader(getClass().getResourceAsStream("/skill-vfx-fixtures.json"),java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+        for(var entry:presets.entrySet()) {
+            var preset=entry.getValue().getAsJsonObject();String effect=preset.get("effect").getAsString();
+            if(!java.util.Set.of("HEAVY_STRIKE","LONG_THRUST","LOW_SWEEP","SHIELD_BASH","PRECISE_SHOT","HINDERING_SHOT","MASTER_SHOT","DOUBLE_SHOT","COVER_FIRE").contains(effect))continue;
+            String stage=preset.get("class").getAsString().equals("arciere")?"trail":"cast";
+            var cue=preset.getAsJsonObject("presentation").getAsJsonObject(stage);
+            var d=VfxDraft.defaults();d.add("shape",cue.get("shape"));d.add("duration",cue.get("duration-ticks"));d.add("radius",cue.get("radius"));d.add("mesh",cue.get("mesh"));
+            var e=EffectMessage.read(VfxDraft.packet(d,"11111111-1111-1111-1111-111111111111",new EffectMessage.Position(-3,1,-3),new EffectMessage.Position(0,0,0),null));
+            var frames=new ArrayList<List<MeshGeometry.Layer>>();for(int age=0;age<40;age++)frames.add(MeshGeometry.build(e,age/40.0*e.durationTicks(),false));
+            gallery.put(preset.get("name").getAsString(),frames);
+        }
+        Files.writeString(Path.of("build/vfx-preview.json"),new Gson().toJson(gallery));
+        assertEquals(13,gallery.size());
     }
 }
