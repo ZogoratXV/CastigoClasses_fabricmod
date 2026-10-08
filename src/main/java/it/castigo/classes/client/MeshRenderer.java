@@ -21,7 +21,10 @@ public final class MeshRenderer {
             var draws=new ArrayList<Draw>();int quads=0,instances=0;
             for(var e:effects) {
                 if(++instances>32)break;
-                for(var layer:MeshGeometry.build(e.effect(),e.age(),e.center().distanceSquared(eye)>24*24)) {
+                var effect=e.effect();
+                if(effect.from().distanceSquared(e.center())>128*128)continue;
+                if(effect.shape()==EffectMessage.Shape.MESH_SIGIL)effect=effect.positioned(effect.from(),e.center(),new EffectMessage.Position(eye.x()-e.center().x(),0,eye.z()-e.center().z()));
+                for(var layer:MeshGeometry.build(effect,e.age(),e.center().distanceSquared(eye)>24*24)) {
                     quads+=layer.vertices().size()/4;if(quads>8192)break;
                     draws.add(new Draw(e.center(),layer));
                 }

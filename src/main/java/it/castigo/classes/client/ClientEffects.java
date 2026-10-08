@@ -19,22 +19,36 @@ public final class ClientEffects {
     private static final class Animation {
         final EffectMessage effect;
         final ParticleOptions particle;
-        int age,index;
+        int age,index,phase;
         EffectMessage.Position center;
         Animation(EffectMessage effect,ParticleOptions particle) { this.effect=effect;this.particle=particle;center=effect.at(); }
     }
     public record MeshFrame(EffectMessage effect,EffectMessage.Position center,double age) {}
+    private static net.minecraft.world.entity.Entity target(EffectMessage e) {
+        if(e.target()==null||level==null)return null;
+        var entity=e.targetEntity()<0?level.getPlayerByUUID(e.target()):level.getEntity(e.targetEntity());
+        return entity!=null&&entity.getUUID().equals(e.target())&&entity.isAlive()&&!entity.isSpectator()?entity:null;
+    }
+    public static void stop(String handle) { java.util.UUID.fromString(handle);active.removeIf(a->handle.equals(a.effect.handle())); }
     public static List<MeshFrame> meshFrames(ClientLevel extractingLevel,float partial) {
         if(extractingLevel!=level||!CastigoClient.STATE.active())return List.of();
         var frames=new ArrayList<MeshFrame>();
         for(var a:active)if(a.effect.hasMesh()) {
             var center=a.center;
             if(a.effect.target()!=null) {
-                var target=level.getPlayerByUUID(a.effect.target());
-                if(target==null||!target.isAlive()||target.isSpectator())continue;
-                var p=target.getPosition(partial);center=new EffectMessage.Position(p.x,p.y,p.z);
+                var target=target(a.effect);if(target==null)continue;
+                var p=target.getPosition(partial);center=new EffectMessage.Position(p.x,p.y+a.effect.anchorHeight(),p.z);
             }
-            frames.add(new MeshFrame(a.effect,center,Math.max(0,a.age-1+partial)));
+            var start=a.effect.from();var direction=a.effect.direction();
+            if(a.effect.source()!=null) {
+                var source=level.getPlayerByUUID(a.effect.source());
+                if(source==null||!source.isAlive())continue;
+                var p=source.getPosition(partial);start=new EffectMessage.Position(p.x,p.y+source.getEyeHeight(),p.z);
+            }
+            if(a.effect.shape()==EffectMessage.Shape.MESH_SHIELD&&target(a.effect)!=null) {
+                var look=target(a.effect).getLookAngle();direction=new EffectMessage.Position(look.x,look.y,look.z);
+            }
+            frames.add(new MeshFrame(a.effect.positioned(start,center,direction),center,Math.max(0,a.phase-1+partial)));
         }
         return List.copyOf(frames);
     }
@@ -47,15 +61,18 @@ public final class ClientEffects {
     }
     public static void receive(JsonObject o,Minecraft client) {
         context(client);
-        if(client.level==null||client.player==null||!CastigoClient.STATE.active()||active.size()>=MAX_ACTIVE)return;
+        if(client.level==null||client.player==null||!CastigoClient.STATE.active())return;
         EffectMessage e=EffectMessage.read(o);
         if(!e.world().equals(world)||!e.near(new EffectMessage.Position(client.player.getX(),client.player.getY(),client.player.getZ()),64))return;
+        int phase=0;
+        if(e.handle()!=null)for(var it=active.iterator();it.hasNext();) { var a=it.next();if(e.handle().equals(a.effect.handle())) { phase=a.phase;it.remove();break; } }
+        if(active.size()>=MAX_ACTIVE)return;
         ParticleOptions particle=null;
         if(e.particles().enabled()) {
             if(e.particles().id().equals("minecraft:dust"))particle=new DustParticleOptions(e.particles().color(),e.particles().size());
             else if(BuiltInRegistries.PARTICLE_TYPE.getValue(Identifier.parse(e.particles().id())) instanceof SimpleParticleType simple)particle=simple;
         }
-        active.add(new Animation(e,particle));
+        var animation=new Animation(e,particle);animation.phase=phase;active.add(animation);
     }
     public static void tick(Minecraft client) {
         context(client);
@@ -65,16 +82,17 @@ public final class ClientEffects {
         for(var iterator=active.iterator();iterator.hasNext();) {
             Animation a=iterator.next();EffectMessage e=a.effect;
             if(e.hasMesh()&&e.target()!=null) {
-                var target=client.level.getPlayerByUUID(e.target());
-                if(target==null||!target.isAlive()||target.isSpectator()) { iterator.remove();continue; }
-                a.center=new EffectMessage.Position(target.getX(),target.getY(),target.getZ());
+                var target=target(e);
+                if(target==null) { iterator.remove();continue; }
+                a.center=new EffectMessage.Position(target.getX(),target.getY()+e.anchorHeight(),target.getZ());
             }
-            if(e.hasMesh()?a.center.distanceSquared(observer)>64*64:!e.near(observer,64)) { iterator.remove();continue; }
+            if(e.hasMesh()&&e.shape()!=EffectMessage.Shape.MESH_BEAM?a.center.distanceSquared(observer)>64*64:!e.near(observer,64)) { iterator.remove();continue; }
             if(a.age==0&&e.sound().enabled()&&e.sound().volume()>0&&audioBudget>0) {
                 audioBudget--;
                 client.level.playLocalSound(a.center.x(),a.center.y(),a.center.z(),SoundEvent.createVariableRangeEvent(Identifier.parse(e.sound().id())),
                         SoundSource.valueOf(e.sound().category()),e.sound().volume(),e.sound().pitch(),false);
             }
+            a.phase++;
             if(e.hasMesh()) {
                 if(a.particle!=null&&a.age%2==0)for(int i=64;i<HealingBeam.SAMPLES&&budget>0;i++) {
                     var point=HealingBeam.sample(a.age,e.durationTicks(),i,e.radius(),e.particles().color(),e.particles().size());

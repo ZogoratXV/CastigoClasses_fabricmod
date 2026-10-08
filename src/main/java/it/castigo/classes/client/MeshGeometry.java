@@ -9,11 +9,13 @@ public final class MeshGeometry {
     private MeshGeometry() {}
     public static List<Layer> build(EffectMessage effect,double age,boolean distant) {
         if(!effect.hasMesh())return List.of();
-        var m=effect.mesh();double life=age/effect.durationTicks(),alpha=m.alpha(life);
+        var m=effect.mesh();double life=effect.handle()==null?age/effect.durationTicks():.5,alpha=m.alpha(life);
         if(alpha<=0)return List.of();
         var layers=new ArrayList<Layer>();
         double seconds=age/20,angle=Math.toRadians(m.rotation()*seconds),radius=effect.radius()*(.88+.12*Math.min(1,life/.2));
         int rgb=m.tint().equals("auto")?effect.particles().color():Integer.parseInt(m.tint(),16);
+        if(effect.shape()!=EffectMessage.Shape.HEALING_BEAM&&effect.shape()!=EffectMessage.Shape.MESH_RING&&effect.shape()!=EffectMessage.Shape.MESH_COLUMN)
+            return SpellGeometry.build(effect,life,angle,alpha,rgb,distant);
         if(effect.shape()!=EffectMessage.Shape.MESH_COLUMN&&m.rings()>0) {
             var vertices=new ArrayList<Vertex>();
             for(int i=0;i<m.rings();i++) {

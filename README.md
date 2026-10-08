@@ -1,6 +1,10 @@
 # CastigoClasses — mod Fabric
 
-Companion client **0.1.0-beta.8** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin). I VFX client richiedono il plugin 0.1.0-beta.3 con CastigoCore beta.9; i punti attributo richiedono almeno il plugin beta.2. Con beta.1 rimangono disponibili HUD e skill, senza pulsanti di assegnazione (protocollo v1 compatibile).
+Companion client **0.1.0-beta.9** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin). I VFX client richiedono il plugin 0.1.0-beta.3 con CastigoCore beta.9; i punti attributo richiedono almeno il plugin beta.2. Con beta.1 rimangono disponibili HUD e skill, senza pulsanti di assegnazione (protocollo v1 compatibile).
+
+## VFX di tutte le classi — beta.9
+
+Preset per 48 abilità, tagli, scie, scudi, sigilli e vortici. [Installazione e utilizzo](docs/AGGIORNAMENTO-VFX-BETA9.md) · [Catalogo delle abilità](docs/VFX-48-ABILITA.md). Aggiornare plugin e mod alla beta.9.
 
 ## Motore VFX 3D beta.8
 
@@ -25,7 +29,7 @@ Il plugin **beta.4** aggiunge cinque discipline con 40 abilità. La mod beta.5 r
 - Minecraft **26.2**, Java **25**.
 - Fabric Loader **0.19.5** o superiore.
 - Fabric API **0.161.0+26.2**.
-- Sostituisci il vecchio JAR della mod con `CastigoClasses-Fabric-0.1.0-beta.8.jar` nella cartella `mods` del profilo Minecraft 26.2. Mantieni Fabric API; non lasciare entrambe le versioni della mod nella cartella.
+- Sostituisci il vecchio JAR della mod con `CastigoClasses-Fabric-0.1.0-beta.9.jar` nella cartella `mods` del profilo Minecraft 26.2. Mantieni Fabric API; non lasciare entrambe le versioni della mod nella cartella.
 
 Il server rimane Purpur e deve avere CastigoCore e CastigoClasses. Questa mod è solo client.
 
@@ -114,4 +118,5 @@ Le stesse formule usano sia la crescita automatica sia i punti assegnati. Il pan
 [Configurazione VFX/suoni e aggiornamento](docs/VFX-CLIENT.md). La mod dichiara la propria capacità nel saluto e anima gli eventi inviati dal server, con limiti locali e pulizia al cambio mondo/disconnessione. Il server mantiene tutte le decisioni di combattimento.
 
 [Proposta delle cinque discipline e 40 abilità](docs/PROPOSTA-DISCIPLINE.md): documento di valutazione, non classi già implementate.
+
 

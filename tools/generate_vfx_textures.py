@@ -37,12 +37,48 @@ def column(u, v):
     ribbons = (.5+.5*math.sin(4*a+.6*math.sin(t)+.2*math.cos(2*t)))**4
     return .13 + .42*ribbons + .43*threads
 
+def seal(u,v,kind):
+    x,y=(u-.5)*2,(v-.5)*2;r=math.hypot(x,y);a=math.atan2(y,x)
+    edge=.8*math.exp(-((r-.83)/.014)**2)+.25*math.exp(-((r-.83)/.04)**2)
+    spokes=math.exp(-(math.sin(a*(3 if kind=='dark' else 4 if kind=='holy' else 6))/.1)**2)*math.exp(-((r-.53)/.24)**8)
+    inner=.6*math.exp(-((r-(.34+.07*math.cos(a*(3 if kind=='dark' else 6))))/.012)**2)
+    return edge+.75*spokes+inner
+
+def ribbon(u,v):
+    # U along the stroke, V across it. Transparent borders hide the quad edges.
+    return math.sin(math.pi*u)**.35*math.exp(-((v-.5)/.16)**2)
+
+def slash(u,v):
+    return math.sin(math.pi*u)**.2*math.exp(-((v-.5)/.23)**2)*(.65+.35*math.sin(u*math.pi*3)**2)
+
+def flare(u,v):
+    x,y=(u-.5)*2,(v-.5)*2;r=math.hypot(x,y)
+    return .9*math.exp(-(r/.24)**2)+.5*math.exp(-(x/.025)**2-(y/.7)**2)+.5*math.exp(-(y/.025)**2-(x/.7)**2)
+
+def shield(u,v):
+    # Transparent panel rim and a central diamond.
+    edge=min(u,v,1-u,1-v)
+    diamond=abs(abs(u-.5)+abs(v-.5)-.32)
+    return .045+.55*math.exp(-(edge/.018)**2)+.35*math.exp(-(diamond/.013)**2)
+
+def wave(u,v):
+    r=math.hypot((u-.5)*2,(v-.5)*2)
+    return .85*math.exp(-((r-.83)/.025)**2)+.22*math.exp(-((r-.77)/.08)**2)
+
+def lightning(u,v):
+    center=.5+.15*math.sin(u*math.pi*14)*math.sin(math.pi*u)
+    return math.sin(math.pi*u)**.3*(math.exp(-((v-center)/.025)**2)+.35*math.exp(-((v-center)/.1)**2))
+
 if __name__ == '__main__':
     ROOT.mkdir(parents=True, exist_ok=True)
     png(ROOT/'rune_ring.png', 256, ring)
     png(ROOT/'healing_column.png', 128, column)
+    spells={'holy_seal':lambda u,v:seal(u,v,'holy'),'dark_seal':lambda u,v:seal(u,v,'dark'),
+            'nature_seal':lambda u,v:seal(u,v,'nature'),'ribbon':ribbon,'slash':slash,'flare':flare,'shield_grid':shield,'wave':wave,'lightning':lightning}
+    for name,fn in spells.items():png(ROOT/(name+'.png'),256,fn)
     print('Created rune_ring.png and healing_column.png')
     if len(sys.argv)>1:
         preview=Path(sys.argv[1]);preview.mkdir(parents=True,exist_ok=True)
         png(preview/'ring-preview.png',256,ring,True)
         png(preview/'column-preview.png',128,column,True)
+        for name,fn in spells.items():png(preview/(name+'-preview.png'),256,fn,True)

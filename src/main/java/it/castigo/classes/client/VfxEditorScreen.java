@@ -14,7 +14,7 @@ import java.util.*;
 /** In-world editor: preview is local; applying to the server requires admin permission. */
 public final class VfxEditorScreen extends Screen {
     private static final String[] STAGES={"CAST","TRAIL","IMPACT","TELEGRAPH","HIT"};
-    private static final String[] SHAPES={"BURST","LINE","RING","SPIRAL","HEALING_BEAM","MESH_RING","MESH_COLUMN"};
+    private static final String[] SHAPES={"BURST","LINE","RING","SPIRAL","HEALING_BEAM","MESH_RING","MESH_COLUMN","MESH_SLASH","MESH_SHIELD","MESH_BEAM","MESH_BURST","MESH_VORTEX","MESH_SIGIL","MESH_WAVE","MESH_THRUST"};
     private static final String[][] KEYS={{"duration","radius","points","color","size","spread"},{"particle","count","sound","volume","pitch"},{"height","opacity","rotation","scroll","rings","ringGap"},{"fadeIn","fadeOut","columnRadius","ringTexture","columnTexture","tint"}};
     private static final String[][] LABELS={{"Durata (1–40 tick)","Raggio (0,1–12)","Punti (2–32)","Colore RGB","Dimensione (0,05–4)","Dispersione (0–2)"},{"Particella Bukkit","Quantità (1–32)","ID suono","Volume (0–2)","Tono (0,5–2)"},{"Altezza (0,1–12)","Opacità (0–1)","Rotazione °/s ±720","Scorrimento ±4","Anelli (0–4)","Distanza anelli (0–3)"},{"Entrata (0–0,5 vita)","Uscita (0–0,5 vita)","Raggio colonna ×0,05–1","Texture anelli PNG","Texture colonna PNG","Colore mesh RGB/auto"}};
     private final Map<String,EditBox> fields=new LinkedHashMap<>();
@@ -85,12 +85,15 @@ public final class VfxEditorScreen extends Screen {
     private void preview() {
         var mc=Minecraft.getInstance();if(mc.player==null||!draft.get("enabled").getAsBoolean())return;
         var from=new EffectMessage.Position(mc.player.getX(),mc.player.getY(),mc.player.getZ());
-        var at=from;UUID target=self?mc.player.getUUID():null;
+        var at=from;UUID target=self?mc.player.getUUID():null;int targetId=self?mc.player.getId():-1;
         if(!self) {
-            if(mc.hitResult instanceof EntityHitResult hit&&hit.getEntity() instanceof net.minecraft.world.entity.player.Player p) { at=new EffectMessage.Position(p.getX(),p.getY(),p.getZ());target=p.getUUID(); }
+            if(mc.hitResult instanceof EntityHitResult hit&&hit.getEntity() instanceof net.minecraft.world.entity.LivingEntity p) { at=new EffectMessage.Position(p.getX(),p.getY(),p.getZ());target=p.getUUID();targetId=p.getId(); }
             else { var look=mc.player.getLookAngle().scale(3).add(mc.player.position());at=new EffectMessage.Position(look.x,look.y,look.z); }
         }
-        ClientEffects.receive(VfxDraft.packet(draft,CastigoClient.STATE.world,from,at,target),mc);
+        var packet=VfxDraft.packet(draft,CastigoClient.STATE.world,from,at,target);
+        if(targetId>=0)packet.addProperty("targetEntity",targetId);
+        var look=mc.player.getLookAngle();var direction=new JsonArray();direction.add(look.x);direction.add(look.y);direction.add(look.z);packet.add("direction",direction);
+        ClientEffects.receive(packet,mc);
         status="Anteprima locale: nessuna skill/cura/danno eseguita";
     }
     @Override public boolean isPauseScreen() { return false; }
