@@ -12,7 +12,7 @@ class MeshGeometryTest {
     }
     @Test void healingBeamHasTwoTexturedLayersWithTwoRingsAndARealCylinder() {
         var layers=MeshGeometry.build(effect("HEALING_BEAM",MeshSettings.DEFAULT.json()),10,false);
-        assertEquals(2,layers.size());assertEquals(8,layers.getFirst().vertices().size());
+        assertEquals(4,layers.size());assertEquals(8,layers.getFirst().vertices().size());
         assertTrue(layers.get(1).vertices().size()>=24*8*4);
         assertTrue(layers.get(1).vertices().stream().anyMatch(v->v.y()>2.8));
     }
@@ -33,16 +33,16 @@ class MeshGeometryTest {
                     for(var v:layer.vertices()) {
                         assertTrue(Float.isFinite(v.x())&&Float.isFinite(v.y())&&Float.isFinite(v.z()));
                         assertTrue(v.u()>=0&&v.u()<=1&&v.v()>=0&&v.v()<=1);
-                        assertTrue(v.y()>=0&&v.y()<=12.05);assertTrue(Math.abs(v.x())<=1.5&&Math.abs(v.z())<=1.5);
+                        assertTrue(v.y()>=-.7&&v.y()<=12.7);assertTrue(Math.abs(v.x())<=1.5&&Math.abs(v.z())<=1.5);
                     }
                 }
-                assertTrue(count<=220);
+                assertTrue(count<=360);
             }
         }
     }
     @Test void standaloneShapesAndDistanceLodReduceGeometry() {
         var m=MeshSettings.DEFAULT.json();
-        assertEquals(1,MeshGeometry.build(effect("MESH_RING",m),10,false).size());
+        assertEquals(2,MeshGeometry.build(effect("MESH_RING",m),10,false).size());
         var column=effect("MESH_COLUMN",m);
         assertTrue(MeshGeometry.build(column,10,true).getFirst().vertices().size()<MeshGeometry.build(column,10,false).getFirst().vertices().size());
         assertTrue(MeshGeometry.build(effect("RING",m),10,false).isEmpty());

@@ -41,6 +41,7 @@ public final class SpellGeometry {
                 for(int i=0;i<n;i++) {
                     double a=head-i*sweep/n,b=head-(i+1)*sweep/n,fade=alpha*(1-i/(double)n);
                     strip(out,arc(a,r*.55,h*.35),arc(b,r*.55,h*.35),arc(b,r,h*.55),arc(a,r,h*.55),i/(float)n,(i+1)/(float)n,rgb,fade);
+                    strip(out,arc(a,r*.83,h*.50+.008),arc(b,r*.83,h*.50+.008),arc(b,r*.92,h*.53+.008),arc(a,r*.92,h*.53+.008),i/(float)n,(i+1)/(float)n,0xFFF1CF,fade*.85);
                 }
                 texture=m.columnTexture();
             }

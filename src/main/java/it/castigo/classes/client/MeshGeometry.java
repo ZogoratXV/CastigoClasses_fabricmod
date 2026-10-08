@@ -14,8 +14,13 @@ public final class MeshGeometry {
         var layers=new ArrayList<Layer>();
         double seconds=age/20,angle=Math.toRadians(m.rotation()*seconds),radius=effect.radius()*(.88+.12*Math.min(1,life/.2));
         int rgb=m.tint().equals("auto")?effect.particles().color():Integer.parseInt(m.tint(),16);
-        if(effect.shape()!=EffectMessage.Shape.HEALING_BEAM&&effect.shape()!=EffectMessage.Shape.MESH_RING&&effect.shape()!=EffectMessage.Shape.MESH_COLUMN)
-            return SpellGeometry.build(effect,life,angle,alpha,rgb,distant);
+        if(effect.shape()==EffectMessage.Shape.MESH_BURST)return VolumeGeometry.burst(effect,life,alpha,rgb,distant);
+        if(effect.shape()==EffectMessage.Shape.MESH_BEAM)return VolumeGeometry.beam(effect,life,age,alpha,rgb,distant);
+        if(effect.shape()!=EffectMessage.Shape.HEALING_BEAM&&effect.shape()!=EffectMessage.Shape.MESH_RING&&effect.shape()!=EffectMessage.Shape.MESH_COLUMN) {
+            layers.addAll(SpellGeometry.build(effect,life,angle,alpha,rgb,distant));
+            layers.addAll(VolumeGeometry.accents(effect,life,age,alpha,rgb,distant));
+            return layers.stream().filter(l->!l.vertices().isEmpty()).toList();
+        }
         if(effect.shape()!=EffectMessage.Shape.MESH_COLUMN&&m.rings()>0) {
             var vertices=new ArrayList<Vertex>();
             for(int i=0;i<m.rings();i++) {
@@ -46,7 +51,8 @@ public final class MeshGeometry {
             }
             layers.add(new Layer(m.columnTexture(),vertices));
         }
-        return List.copyOf(layers);
+        layers.addAll(VolumeGeometry.accents(effect,life,age,alpha,rgb,distant));
+        return layers.stream().filter(l->!l.vertices().isEmpty()).toList();
     }
     private static void ringVertex(List<Vertex> out,double x,double y,double z,float u,float v,double a,int color) {
         out.add(new Vertex((float)(x*Math.cos(a)-z*Math.sin(a)),(float)y,(float)(x*Math.sin(a)+z*Math.cos(a)),u,v,color));

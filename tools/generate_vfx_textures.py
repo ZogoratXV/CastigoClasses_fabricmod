@@ -19,7 +19,7 @@ def png(path, size, alpha, preview=False):
     path.write_bytes(b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('!2I5B', size, size, 8, 6, 0, 0, 0))
                      + chunk(b'IDAT', zlib.compress(pixels, 9)) + chunk(b'IEND', b''))
     if not preview:
-        path.with_suffix('.png.mcmeta').write_text('{"texture":{"blur":true}}\n', encoding='utf-8')
+        path.with_suffix('.png.mcmeta').write_text('{"texture":{"blur":false}}\n', encoding='utf-8')
 
 def ring(u, v):
     x, y = (u-.5)*2, (v-.5)*2
@@ -38,11 +38,33 @@ def column(u, v):
     return .13 + .42*ribbons + .43*threads
 
 def seal(u,v,kind):
+    # Original angular glyphs, three concentric bands and a distinct central emblem.
     x,y=(u-.5)*2,(v-.5)*2;r=math.hypot(x,y);a=math.atan2(y,x)
-    edge=.8*math.exp(-((r-.83)/.014)**2)+.25*math.exp(-((r-.83)/.04)**2)
-    spokes=math.exp(-(math.sin(a*(3 if kind=='dark' else 4 if kind=='holy' else 6))/.1)**2)*math.exp(-((r-.53)/.24)**8)
-    inner=.6*math.exp(-((r-(.34+.07*math.cos(a*(3 if kind=='dark' else 6))))/.012)**2)
-    return edge+.75*spokes+inner
+    edge=sum(.8*math.exp(-((r-rad)/.009)**2) for rad in (.93,.88,.66,.62))
+    sector=(a/(2*math.pi)*20)%1; index=int((a+math.pi)/(2*math.pi)*20)
+    gx=(sector-.5)*2;gy=(r-.77)/.085
+    stem=abs(gx)<.1 and abs(gy)<.8
+    branch=abs(gy-(.45 if index%2 else -.4)*gx)<.13 and abs(gx)<.62 and abs(gy)<.7
+    cap=abs(gy-.6)<.1 and abs(gx)<(.55 if index%3 else .25)
+    glyph=.95 if .68<r<.85 and (stem or branch or cap) else 0
+    count=3 if kind=='dark' else 4 if kind=='holy' else 6
+    # Polygon/star rather than fine hairline spokes.
+    petal=.36+.13*math.cos(a*count)
+    emblem=.9*math.exp(-((r-petal)/.016)**2)
+    ticks=.7*math.exp(-(math.sin(a*40)/.22)**2)*math.exp(-((r-.905)/.015)**8)
+    return edge+glyph+emblem+ticks+.12*math.exp(-((r-.4)/.22)**2)
+
+def cloud(u,v):
+    # Pixelated billow with nested value bands; white texture is colored per mesh lobe.
+    u,v=(int(u*48)+.5)/48,(int(v*48)+.5)/48
+    x,y=(u-.5)*2,(v-.5)*2;r=math.hypot(x,y);a=math.atan2(y,x)
+    boundary=.66+.09*math.sin(a*5)+.07*math.cos(a*9+1.3)
+    density=max(0,min(1,(boundary-r)*5))
+    noise=.8+.2*math.sin(x*19+math.sin(y*13))*math.cos(y*17)
+    return round(density*noise*5)/5
+
+def shard(u,v):
+    return 1
 
 def ribbon(u,v):
     # U along the stroke, V across it. Transparent borders hide the quad edges.
@@ -71,10 +93,10 @@ def lightning(u,v):
 
 if __name__ == '__main__':
     ROOT.mkdir(parents=True, exist_ok=True)
-    png(ROOT/'rune_ring.png', 256, ring)
+    png(ROOT/'rune_ring.png', 256, lambda u,v:seal(u,v,'arcane'))
     png(ROOT/'healing_column.png', 128, column)
     spells={'holy_seal':lambda u,v:seal(u,v,'holy'),'dark_seal':lambda u,v:seal(u,v,'dark'),
-            'nature_seal':lambda u,v:seal(u,v,'nature'),'ribbon':ribbon,'slash':slash,'flare':flare,'shield_grid':shield,'wave':wave,'lightning':lightning}
+            'nature_seal':lambda u,v:seal(u,v,'nature'),'ribbon':ribbon,'slash':slash,'flare':flare,'shield_grid':shield,'wave':wave,'lightning':lightning,'cloud':cloud,'shard':shard}
     for name,fn in spells.items():png(ROOT/(name+'.png'),256,fn)
     print('Created rune_ring.png and healing_column.png')
     if len(sys.argv)>1:
