@@ -18,7 +18,7 @@ import java.util.List;
 public final class CastigoClient implements ClientModInitializer {
     public static final ClientState STATE=new ClientState();
     public static boolean skillMode;
-    public static KeyMapping toggle,editor,vfxEditor;
+    public static KeyMapping toggle,editor;
     private static int handshakeTicks;
     @Override public void onInitializeClient() {
         MeshRenderer.register();
@@ -30,9 +30,7 @@ public final class CastigoClient implements ClientModInitializer {
                 if(o.get("type").getAsString().equals("vfx"))ClientEffects.receive(o,context.client());
                 else if(o.get("type").getAsString().equals("weapon_motion"))WeaponAnimations.receive(o,context.client());
                 else if(o.get("type").getAsString().equals("vfx_stop"))ClientEffects.stop(o.get("handle").getAsString());
-                else if(o.get("type").getAsString().equals("vfx_editor")) {
-                    if(context.client().gui.screen() instanceof VfxEditorScreen screen)screen.receive(o);
-                } else if(o.get("type").getAsString().equals("feedback")) {
+                else if(o.get("type").getAsString().equals("feedback")) {
                     if(context.client().player!=null)context.client().player.sendOverlayMessage(Component.literal(o.get("message").getAsString()));
                 } else STATE.receive(o);
             } catch(RuntimeException ignored) { /* Unknown or malformed server data is ignored. */ }
@@ -42,7 +40,6 @@ public final class CastigoClient implements ClientModInitializer {
         KeyMapping.Category category=KeyMapping.Category.register(Identifier.fromNamespaceAndPath("castigoclasses","controls"));
         toggle=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.castigoclasses.toggle",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_R,category));
         editor=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.castigoclasses.editor",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_K,category));
-        vfxEditor=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.castigoclasses.vfx_editor",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_F8,category));
         ClientTickEvents.END_CLIENT_TICK.register(client-> {
             ClientEffects.tick(client);
             WeaponAnimations.tick(client);
@@ -53,7 +50,6 @@ public final class CastigoClient implements ClientModInitializer {
                 else if(!STATE.active())client.player.sendOverlayMessage(Component.translatable("castigoclasses.unavailable"));
             }
             while(editor.consumeClick())if(client.gui.screen()==null&&STATE.active())client.gui.setScreen(new SkillScreen());
-            while(vfxEditor.consumeClick())if(client.gui.screen()==null&&STATE.active())client.gui.setScreen(new VfxEditorScreen());
             if(!STATE.active()||client.player.isSpectator())skillMode=false;
         });
         HudElementRegistry.replaceElement(VanillaHudElements.HOTBAR,original->(graphics,delta)-> {

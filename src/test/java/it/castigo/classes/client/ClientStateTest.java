@@ -6,6 +6,12 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ClientStateTest {
+    @Test void hudLayoutChangesResetAndMalformedLayoutsFallback() {
+        var s=state();var p=packet();var theme=new HudTheme(null).with("texture","castigo:textures/gui/hud/nobile.png").with("border","FFD700").with("headX","12");
+        p.add("hud",theme.json());s.receive(p);assertEquals(12,s.hud.number("headX"));assertEquals("FFD700",s.hud.text("border"));
+        p.getAsJsonObject("hud").addProperty("texture","../../bad");s.receive(p);assertEquals("",s.hud.text("texture"));assertTrue(s.active());
+        p.add("hud",theme.json());s.receive(p);s.clear();assertEquals("",s.hud.text("texture"));
+    }
     private ClientState state() {
         ClientState s=new ClientState();List<ClientState.Skill> skills=new ArrayList<>();
         for(int i=0;i<8;i++)skills.add(new ClientState.Skill("s"+i,"Skill "+i,"","minecraft:stick",0,1,10,2000));

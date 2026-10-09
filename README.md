@@ -1,6 +1,12 @@
 # CastigoClasses — mod Fabric
 
-Companion client **0.1.0-beta.12** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin). I VFX client richiedono il plugin 0.1.0-beta.3 con CastigoCore beta.9; i punti attributo richiedono almeno il plugin beta.2. Con beta.1 rimangono disponibili HUD e skill, senza pulsanti di assegnazione (protocollo v1 compatibile).
+Companion client **0.1.0-beta.13** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin). I VFX client richiedono il plugin 0.1.0-beta.3 con CastigoCore beta.9; i punti attributo richiedono almeno il plugin beta.2. Con beta.1 rimangono disponibili HUD e skill, senza pulsanti di assegnazione (protocollo v1 compatibile).
+
+## HUD LuckPerms, casting e icone — beta.13
+
+Editor VFX e F8 rimossi. Tempi di preparazione rispettati da tutte le skill, HUD per gruppi LuckPerms configurabile in gioco con layout PNG ItemsAdder e 40 icone abbinate. [Guida beta.13](docs/AGGIORNAMENTO-BETA13.md). Aggiornare entrambi i JAR.
+
+Le sezioni seguenti descrivono le versioni precedenti: l’editor F8 non è più disponibile nella beta.13.
 
 ## Corpo a corpo, bersagli e icone — beta.12
 
@@ -33,7 +39,7 @@ Il plugin **beta.4** aggiunge cinque discipline con 40 abilità. La mod beta.5 r
 - Minecraft **26.2**, Java **25**.
 - Fabric Loader **0.19.5** o superiore.
 - Fabric API **0.161.0+26.2**.
-- Sostituisci il vecchio JAR della mod con `CastigoClasses-Fabric-0.1.0-beta.12.jar` nella cartella `mods` del profilo Minecraft 26.2. Mantieni Fabric API; non lasciare entrambe le versioni della mod nella cartella.
+- Sostituisci il vecchio JAR della mod con `CastigoClasses-Fabric-0.1.0-beta.13.jar` nella cartella `mods` del profilo Minecraft 26.2. Mantieni Fabric API; non lasciare entrambe le versioni della mod nella cartella.
 
 Il server rimane Purpur e deve avere CastigoCore e CastigoClasses. Questa mod è solo client.
 

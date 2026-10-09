@@ -38,35 +38,37 @@ public final class CastigoHud {
         Minecraft mc=Minecraft.getInstance();if(mc.player==null)return;
         ClientState s=CastigoClient.STATE;
         ClientState.ClassInfo c=s.currentClass();if(c==null)return;
-        int x=5,y=5,w=Math.min(172,g.guiWidth()-10);
-        frame(g,x,y,w,64,false);
-        frame(g,x+5,y+5,30,30,false);
+        HudTheme theme=s.hud;
+        int x=5,y=5,w=theme.number("width"),h=theme.number("height");
+        int border=theme.color("border",GOLD),text=theme.color("text",IVORY);
+        Identifier texture=Identifier.tryParse(theme.text("texture"));
+        boolean hasTexture=texture!=null&&mc.getResourceManager().getResource(texture).isPresent();
+        if(!theme.text("frame").equals("NONE")) {
+            g.fill(x,y,x+w,y+h,border);g.fill(x+2,y+2,x+w-2,y+h-2,theme.color("background",INK));
+            if(theme.text("frame").equals("MEDIEVAL"))for(int cx:new int[]{x+2,x+w-4})for(int cy:new int[]{y+2,y+h-4})g.fill(cx,cy,cx+2,cy+2,text);
+        } else if(!hasTexture)frame(g,x,y,w,h,false);
+        if(hasTexture)g.blit(texture,x,y,x+w,y+h,0f,1f,0f,1f);
+        int hx=x+theme.number("headX"),hy=y+theme.number("headY"),size=theme.number("headSize");
         Identifier skin=mc.player.getSkin().body().texturePath();
-        g.blit(skin,x+8,y+8,x+32,y+32,8/64f,16/64f,8/64f,16/64f);
-        g.blit(skin,x+8,y+8,x+32,y+32,40/64f,48/64f,8/64f,16/64f);
-        String level=String.valueOf(s.level);
-        int badgeWidth=Math.max(16,mc.font.width(level)+6);
-        int badgeX=x+w-badgeWidth-5;
-        g.fill(badgeX,y+6,badgeX+badgeWidth,y+17,0xFF44341B);
-        g.fill(badgeX,y+6,badgeX+badgeWidth,y+7,GOLD);
-        g.centeredText(mc.font,level,badgeX+badgeWidth/2,y+8,GOLD_LIGHT);
-        g.text(mc.font,trim(s.name,badgeX-(x+40)-3),x+40,y+7,IVORY);
-        g.text(mc.font,trim(c.name(),w-46),x+40,y+18,GOLD_LIGHT);
-        if(!s.group.isBlank())g.text(mc.font,trim(s.group,w-46),x+40,y+28,0xFFAC9E82);
-        meter(g,x+6,y+39,w-12,s.health,s.maxHealth,0xFFA5343E,
-                "Vita "+value(s.health)+" / "+value(s.maxHealth));
-        meter(g,x+6,y+50,w-12,s.resource,s.maxResource,0xFF000000|c.resourceColor(),
-                c.resourceName()+" "+value(s.resource)+" / "+value(s.maxResource));
-        // MMO progress stays as a discreet gold line beneath the resource.
-        int xpWidth=w-12;
-        g.fill(x+6,y+60,x+6+xpWidth,y+62,0xFF3C3020);
+        g.blit(skin,hx,hy,hx+size,hy+size,8/64f,16/64f,8/64f,16/64f);
+        g.blit(skin,hx,hy,hx+size,hy+size,40/64f,48/64f,8/64f,16/64f);
+        int tx=x+theme.number("textX"),available=w-theme.number("textX")-6;
+        g.text(mc.font,trim(s.name+" · "+s.level,available),tx,y+theme.number("nameY"),text);
+        g.text(mc.font,trim(c.name(),available),tx,y+theme.number("classY"),border);
+        if(!s.group.isBlank())g.text(mc.font,trim(s.group,available),tx,y+theme.number("groupY"),text);
+        int bx=x+theme.number("barsX"),bw=theme.number("barsWidth");
+        meter(g,bx,y+theme.number("healthY"),bw,s.health,s.maxHealth,theme.color("healthColor",0xFFA5343E),
+                "Vita "+value(s.health)+" / "+value(s.maxHealth),border,text);
+        meter(g,bx,y+theme.number("resourceY"),bw,s.resource,s.maxResource,theme.color("resourceColor",0xFF000000|c.resourceColor()),
+                c.resourceName()+" "+value(s.resource)+" / "+value(s.maxResource),border,text);
+        int xpY=y+theme.number("xpY");g.fill(bx,xpY,bx+bw,xpY+2,0xFF3C3020);
         double progress=s.xpNext==0?1:Math.max(0,Math.min(1,(double)s.xp/s.xpNext));
-        g.fill(x+6,y+60,x+6+(int)(xpWidth*progress),y+62,GOLD);
+        g.fill(bx,xpY,bx+(int)(bw*progress),xpY+2,border);
     }
 
     private static String value(double n) { return String.valueOf((int)Math.ceil(n)); }
-    private static void meter(GuiGraphicsExtractor g,int x,int y,int width,double value,double max,int color,String label) {
-        g.fill(x,y-1,x+width,y+9,BRONZE);
+    private static void meter(GuiGraphicsExtractor g,int x,int y,int width,double value,double max,int color,String label,int border,int text) {
+        g.fill(x,y-1,x+width,y+9,border);
         g.fill(x+1,y,x+width-1,y+8,0xFF211B16);
         int filled=(int)((width-2)*Math.max(0,Math.min(1,value/Math.max(1,max))));
         if(filled>0) {
@@ -74,7 +76,7 @@ public final class CastigoHud {
             g.fill(x+1,y,x+1+filled,y+1,0x55FFFFFF);
             g.fill(x+1,y+7,x+1+filled,y+8,0x60000000);
         }
-        g.centeredText(Minecraft.getInstance().font,trim(label,width-6),x+width/2,y,IVORY);
+        g.centeredText(Minecraft.getInstance().font,trim(label,width-6),x+width/2,y,text);
     }
 
     public static int barX(GuiGraphicsExtractor g) { return (g.guiWidth()-BAR_WIDTH)/2; }

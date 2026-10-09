@@ -16,6 +16,7 @@ public final class ClientState {
     public boolean enabled;
     public String name="",classId="",group="";
     public String world="";
+    public HudTheme hud=new HudTheme(null);
     public int level=1;
     public long xp,xpNext;
     public double health,maxHealth,resource,maxResource;
@@ -31,12 +32,11 @@ public final class ClientState {
     public long lastUpdate;
     public String castingName="";
     public long castingTotal,castingRemaining,castingReceived;
-    public boolean vfxAdmin;
     public double castingProgress(long now) { return castingTotal<=0?0:Math.max(0,Math.min(1,1-(castingRemaining-Math.max(0,now-castingReceived))/(double)castingTotal)); }
     public void clear() {
         enabled=false;classes.clear();pending.clear();slots=List.of();cooldownEnds.clear();stats.clear();lastUpdate=0;
-        clearPoints();combat.clear();world="";
-        castingName="";castingTotal=0;vfxAdmin=false;
+        clearPoints();combat.clear();world="";hud=new HudTheme(null);
+        castingName="";castingTotal=0;
     }
     public ClassInfo currentClass() { return classes.get(classId); }
     public boolean active() { return enabled&&currentClass()!=null&&slots.size()==8&&System.currentTimeMillis()-lastUpdate<10000; }
@@ -53,6 +53,7 @@ public final class ClientState {
                 List<String> order=new ArrayList<>();o.getAsJsonArray("slots").forEach(e->order.add(e.getAsString()));
                 if(!SlotOrder.valid(order,c.skills().stream().map(Skill::id).toList()))return;
                 name=o.get("name").getAsString();classId=next;group=o.get("group").getAsString();
+                try { hud=new HudTheme(o.has("hud")?o.getAsJsonObject("hud"):null); } catch(RuntimeException invalid) { hud=new HudTheme(null); }
                 world=o.has("world")?o.get("world").getAsString():"";
                 level=o.get("level").getAsInt();xp=o.get("xp").getAsLong();xpNext=o.get("xpNext").getAsLong();
                 health=number(o,"health");maxHealth=number(o,"maxHealth");resource=number(o,"resource");maxResource=number(o,"maxResource");
@@ -68,10 +69,10 @@ public final class ClientState {
                 cooldownEnds.clear();long now=System.currentTimeMillis();
                 o.getAsJsonObject("cooldowns").entrySet().forEach(e->cooldownEnds.put(e.getKey(),now+Math.max(0,Math.min(86_400_000,e.getValue().getAsLong()))));
                 lastUpdate=now;enabled=true;
-                castingName="";castingTotal=0;vfxAdmin=o.has("vfxAdmin")&&o.get("vfxAdmin").getAsBoolean();
+                castingName="";castingTotal=0;
                 if(o.has("casting")&&o.getAsJsonObject("casting").has("name")) {
                     var cast=o.getAsJsonObject("casting");long total=cast.get("totalMs").getAsLong(),remaining=cast.get("remainingMs").getAsLong();
-                    if(total>0&&total<=10000&&remaining>=0&&remaining<=total) {
+                    if(total>0&&total<=30000&&remaining>=0&&remaining<=total) {
                         castingName=cast.get("name").getAsString();castingTotal=total;castingRemaining=remaining;castingReceived=now;
                     }
                 }
