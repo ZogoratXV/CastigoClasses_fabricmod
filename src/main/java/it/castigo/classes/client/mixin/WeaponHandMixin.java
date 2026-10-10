@@ -21,7 +21,7 @@ public abstract class WeaponHandMixin {
         pose.pushPose();if(!player.isUsingItem())WeaponAnimations.firstPerson(player.getId(),hand,pose);
         if(hand==InteractionHand.MAIN_HAND&&WeaponAnimations.gripping(player.getId())&&!player.isInvisible()){
             pose.pushPose();float sign=player.getMainArm()==HumanoidArm.LEFT?-1:1;
-            pose.translate(.85f*sign,-.08f,-.08f);
+            pose.translate(.85f*sign,-.08f,-.08f);WeaponAnimations.supportHand(player.getId(),pose,sign);
             renderPlayerArm(pose,collector,light,equip,attack,player.getMainArm().getOpposite());pose.popPose();
         }
     }

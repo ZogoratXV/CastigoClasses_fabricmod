@@ -77,6 +77,11 @@ public final class SkillScreen extends Screen {
         super.extractRenderState(g,mouseX,mouseY,delta);
         ClientState s=CastigoClient.STATE;ClientState.ClassInfo c=s.currentClass();if(c==null)return;
         g.centeredText(font,c.name()+" · Livello "+s.level,width/2,10,0xFFE0C78D);
+        if(height>=260){
+            String quota=s.classCapped?"Cap classe raggiunto: usa il consumabile per progredire":s.dailyCap>0?"XP oggi: "+s.dailyXp+" / "+s.dailyCap:"XP giornaliera illimitata";
+            g.centeredText(font,CastigoHud.trim(quota,width-20),width/2,height-62,s.xpColor(0xFFE0C78D));
+            if(s.dailyCap>0&&s.dailyResetAt>0){String reset=java.time.format.DateTimeFormatter.ofPattern("dd/MM HH:mm").withZone(java.time.ZoneId.of("Europe/Rome")).format(java.time.Instant.ofEpochMilli(s.dailyResetAt));g.centeredText(font,"Reset: "+reset+" (ora italiana)",width/2,height-51,0xFFBBAE95);}
+        }
         if(attributes)renderAttributes(g,mouseX,mouseY,s,c);else renderSkills(g,mouseX,mouseY,s,c);
     }
     private void renderAttributes(GuiGraphicsExtractor g,int mouseX,int mouseY,ClientState s,ClientState.ClassInfo c) {

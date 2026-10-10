@@ -16,6 +16,13 @@ import org.lwjgl.glfw.GLFW;
 import java.util.List;
 
 public final class CastigoClient implements ClientModInitializer {
+    private static void diagnose(Minecraft mc){
+        if(mc.player==null)return;var missing=new java.util.TreeSet<String>();
+        String hud=STATE.hud.text("texture");if(!hud.isBlank())missing.add(hud);
+        var current=STATE.currentClass();if(current!=null)for(var skill:current.skills())if(skill.icon().startsWith("texture:"))missing.add(skill.icon().substring(8));
+        missing.removeIf(id->{var key=Identifier.tryParse(id);return key!=null&&mc.getResourceManager().getResource(key).isPresent();});
+        mc.gui.chatListener().handleSystemMessage(Component.literal("Castigo: "+(missing.isEmpty()?"texture HUD e skill attuali disponibili.":"texture mancanti: "+String.join(", ",missing))),false);
+    }
     public static final ClientState STATE=new ClientState();
     public static boolean skillMode;
     public static KeyMapping toggle,editor;
@@ -31,6 +38,7 @@ public final class CastigoClient implements ClientModInitializer {
                 else if(o.get("type").getAsString().equals("weapon_grip"))WeaponAnimations.receiveGrip(o,context.client());
                 else if(o.get("type").getAsString().equals("weapon_motion"))WeaponAnimations.receive(o,context.client());
                 else if(o.get("type").getAsString().equals("vfx_stop"))ClientEffects.stop(o.get("handle").getAsString());
+                else if(o.get("type").getAsString().equals("diagnostics"))diagnose(context.client());
                 else if(o.get("type").getAsString().equals("feedback")) {
                     if(context.client().player!=null)context.client().player.sendOverlayMessage(Component.literal(o.get("message").getAsString()));
                 } else STATE.receive(o);

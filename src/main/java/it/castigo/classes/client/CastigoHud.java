@@ -54,29 +54,33 @@ public final class CastigoHud {
         g.blit(skin,hx,hy,hx+size,hy+size,40/64f,48/64f,8/64f,16/64f);
         int tx=x+theme.number("textX"),available=w-theme.number("textX")-6;
         g.text(mc.font,trim(s.name+" · "+s.level,available),tx,y+theme.number("nameY"),text);
-        g.text(mc.font,trim(c.name(),available),tx,y+theme.number("classY"),border);
-        if(!s.group.isBlank())g.text(mc.font,trim(s.group,available),tx,y+theme.number("groupY"),text);
+        scaledText(g,c.name(),tx,y+theme.number("classY"),available,border,theme.number("textScale"));
+        if(!s.group.isBlank())scaledText(g,s.group,tx,y+theme.number("groupY"),available,text,theme.number("textScale"));
         int bx=x+theme.number("barsX"),bw=theme.number("barsWidth");
         meter(g,bx,y+theme.number("healthY"),bw,s.health,s.maxHealth,theme.color("healthColor",0xFFA5343E),
-                "Vita "+value(s.health)+" / "+value(s.maxHealth),border,text);
+                "Vita "+value(s.health)+" / "+value(s.maxHealth),border,text,theme.number("barHeight"),theme.number("barTextScale"),!hasTexture);
         meter(g,bx,y+theme.number("resourceY"),bw,s.resource,s.maxResource,theme.color("resourceColor",0xFF000000|c.resourceColor()),
-                c.resourceName()+" "+value(s.resource)+" / "+value(s.maxResource),border,text);
+                c.resourceName()+" "+value(s.resource)+" / "+value(s.maxResource),border,text,theme.number("barHeight"),theme.number("barTextScale"),!hasTexture);
         int xpY=y+theme.number("xpY");g.fill(bx,xpY,bx+bw,xpY+2,0xFF3C3020);
         double progress=s.classCapped||s.dailyCapped||s.xpNext==0?1:Math.max(0,Math.min(1,(double)s.xp/s.xpNext));
         g.fill(bx,xpY,bx+(int)(bw*progress),xpY+2,s.xpColor(border));
     }
 
+    private static void scaledText(GuiGraphicsExtractor g,String value,int x,int y,int width,int color,int percent){
+        float scale=percent/100f;g.pose().pushMatrix();try{g.pose().translate(x,y);g.pose().scale(scale,scale);g.text(Minecraft.getInstance().font,trim(value,(int)(width/scale)),0,0,color);}finally{g.pose().popMatrix();}
+    }
     private static String value(double n) { return String.valueOf((int)Math.ceil(n)); }
-    private static void meter(GuiGraphicsExtractor g,int x,int y,int width,double value,double max,int color,String label,int border,int text) {
-        g.fill(x,y-1,x+width,y+9,border);
-        g.fill(x+1,y,x+width-1,y+8,0xFF211B16);
+    private static void meter(GuiGraphicsExtractor g,int x,int y,int width,double value,double max,int color,String label,int border,int text,int height,int percent,boolean drawBorder) {
+        if(drawBorder)g.fill(x,y-1,x+width,y+height+1,border);
+        g.fill(x+1,y,x+width-1,y+height,0xFF211B16);
         int filled=(int)((width-2)*Math.max(0,Math.min(1,value/Math.max(1,max))));
         if(filled>0) {
-            g.fill(x+1,y,x+1+filled,y+8,color);
+            g.fill(x+1,y,x+1+filled,y+height,color);
             g.fill(x+1,y,x+1+filled,y+1,0x55FFFFFF);
-            g.fill(x+1,y+7,x+1+filled,y+8,0x60000000);
+            g.fill(x+1,y+height-1,x+1+filled,y+height,0x60000000);
         }
-        g.centeredText(Minecraft.getInstance().font,trim(label,width-6),x+width/2,y,text);
+        float scale=percent/100f;String shown=trim(label,(int)((width-6)/scale));int textWidth=(int)(Minecraft.getInstance().font.width(shown)*scale);
+        scaledText(g,shown,x+(width-textWidth)/2,y+Math.round((height-9*scale)/2),width-6,text,percent);
     }
 
     public static int barX(GuiGraphicsExtractor g) { return (g.guiWidth()-BAR_WIDTH)/2; }
@@ -86,6 +90,7 @@ public final class CastigoHud {
         g.fill(x-1,y-1,x+183,y+7,0xFF655031);g.fill(x,y,x+182,y+6,0xFF17130E);
         int fill=(int)(182*s.castingProgress(System.currentTimeMillis()));
         g.fill(x,y,x+fill,y+6,0xFFD5AE57);g.fill(x,y,x+fill,y+1,0xFFFFE9A5);
+        if(!s.castingTarget.isEmpty())g.centeredText(Minecraft.getInstance().font,trim(s.castingTarget,240),x+91,y-22,0xFFE0D6C0);
         g.centeredText(Minecraft.getInstance().font,trim(s.castingName,180),x+91,y-11,0xFFFFE9A5);
     }
     public static void bar(GuiGraphicsExtractor g,List<String> order,int selected) {
