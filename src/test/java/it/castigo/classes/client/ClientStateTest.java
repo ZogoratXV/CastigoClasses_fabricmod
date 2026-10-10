@@ -6,6 +6,12 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ClientStateTest {
+    @Test void capColorsPrioritizeClassAndClearWithOldPackets(){
+        var s=state();var p=packet();p.addProperty("dailyCapped",true);s.receive(p);assertEquals(0xFFE14444,s.xpColor(123));
+        p.addProperty("classCapped",true);s.receive(p);assertEquals(0xFF43C96B,s.xpColor(123));
+        s.receive(packet());assertEquals(123,s.xpColor(123));
+        var locked=new ClientState.Skill("locked","Locked","","minecraft:stick",0,10,1,1);assertFalse(s.learned(locked));s.level=10;assertTrue(s.learned(locked));
+    }
     @Test void hudLayoutChangesResetAndMalformedLayoutsFallback() {
         var s=state();var p=packet();var theme=new HudTheme(null).with("texture","castigo:textures/gui/hud/nobile.png").with("border","FFD700").with("headX","12");
         p.add("hud",theme.json());s.receive(p);assertEquals(12,s.hud.number("headX"));assertEquals("FFD700",s.hud.text("border"));

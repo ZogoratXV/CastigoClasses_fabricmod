@@ -28,6 +28,7 @@ public final class CastigoClient implements ClientModInitializer {
             try {
                 JsonObject o=JsonParser.parseString(payload.json()).getAsJsonObject();if(o.get("v").getAsInt()!=1)return;
                 if(o.get("type").getAsString().equals("vfx"))ClientEffects.receive(o,context.client());
+                else if(o.get("type").getAsString().equals("weapon_grip"))WeaponAnimations.receiveGrip(o,context.client());
                 else if(o.get("type").getAsString().equals("weapon_motion"))WeaponAnimations.receive(o,context.client());
                 else if(o.get("type").getAsString().equals("vfx_stop"))ClientEffects.stop(o.get("handle").getAsString());
                 else if(o.get("type").getAsString().equals("feedback")) {
@@ -95,7 +96,7 @@ public final class CastigoClient implements ClientModInitializer {
         Minecraft client=Minecraft.getInstance();
         if(!isSkillMode()||client.player==null||client.player.isSpectator()||client.gui.screen()!=null||client.gui.overlay()!=null)return false;
         for(int i=0;i<9;i++)if(client.options.keyHotbarSlots[i].matches(event)) {
-            if(action==GLFW.GLFW_PRESS&&i<8) {
+            if(action==GLFW.GLFW_PRESS&&i<8&&STATE.learned(STATE.currentClass().skill(STATE.slots.get(i)))) {
                 JsonObject o=new JsonObject();o.addProperty("slot",i);request("cast",o);
             }
             return true; // Consume press/repeat/release so the held inventory slot never changes.

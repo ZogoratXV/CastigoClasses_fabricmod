@@ -62,8 +62,8 @@ public final class CastigoHud {
         meter(g,bx,y+theme.number("resourceY"),bw,s.resource,s.maxResource,theme.color("resourceColor",0xFF000000|c.resourceColor()),
                 c.resourceName()+" "+value(s.resource)+" / "+value(s.maxResource),border,text);
         int xpY=y+theme.number("xpY");g.fill(bx,xpY,bx+bw,xpY+2,0xFF3C3020);
-        double progress=s.xpNext==0?1:Math.max(0,Math.min(1,(double)s.xp/s.xpNext));
-        g.fill(bx,xpY,bx+(int)(bw*progress),xpY+2,border);
+        double progress=s.classCapped||s.dailyCapped||s.xpNext==0?1:Math.max(0,Math.min(1,(double)s.xp/s.xpNext));
+        g.fill(bx,xpY,bx+(int)(bw*progress),xpY+2,s.xpColor(border));
     }
 
     private static String value(double n) { return String.valueOf((int)Math.ceil(n)); }
@@ -95,7 +95,7 @@ public final class CastigoHud {
         Minecraft mc=Minecraft.getInstance();
         ClientState s=CastigoClient.STATE;ClientState.ClassInfo c=s.currentClass();if(c==null)return;
         for(int i=0;i<Math.min(8,order.size());i++) {
-            ClientState.Skill skill=c.skill(order.get(i));if(skill==null)continue;
+            ClientState.Skill skill=c.skill(order.get(i));if(!s.learned(skill))continue;
             int sx=x+i*SLOT;
             frame(g,sx,y,22,SLOT_HEIGHT,i==selected);
             Identifier texture=skill.icon().startsWith("texture:")?Identifier.tryParse(skill.icon().substring(8)):null;

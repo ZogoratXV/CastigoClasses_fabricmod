@@ -108,7 +108,7 @@ public final class SkillScreen extends Screen {
         if(changed)g.centeredText(font,"Modifiche da salvare",width/2,rowY()+30,0xFFFFD991);
         int hovered=slot(mouseX,mouseY);
         if(hovered>=0) {
-            ClientState.Skill skill=c.skill(order.get(hovered));if(skill!=null) {
+            ClientState.Skill skill=c.skill(order.get(hovered));if(s.learned(skill)) {
                 List<net.minecraft.util.FormattedCharSequence> lines=new ArrayList<>();
                 lines.add(Component.literal(skill.name()).getVisualOrderText());
                 lines.addAll(font.split(Component.literal(skill.description()),230));

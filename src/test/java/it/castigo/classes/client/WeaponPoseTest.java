@@ -2,6 +2,12 @@ package it.castigo.classes.client;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 class WeaponPoseTest {
+    @Test void bowSkillPoseStaysLowAndOutsideTheCrosshair(){
+        for(boolean prepare:new boolean[]{false,true})for(int i=0;i<=100;i++){
+            var p=WeaponPose.sample(WeaponPose.Style.BOW,prepare,i/100.0);
+            assertTrue(p.x()>=0);assertTrue(p.y()<=0);assertTrue(Math.abs(p.yaw())<=6);assertTrue(Math.abs(p.roll())<=4);
+        }
+    }
     @Test void allGesturesRemainFiniteAndReturnExactlyToNeutral() {
         for(var style:WeaponPose.Style.values()) {
             for(int i=0;i<=100;i++)for(boolean prep:new boolean[]{true,false}) {

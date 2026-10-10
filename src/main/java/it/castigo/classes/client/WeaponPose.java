@@ -11,7 +11,7 @@ public final class WeaponPose {
         double hit=preparing?0:Math.sin(Math.min(1,t*2.5)*Math.PI);
         return switch(style) {
             case CAST -> new Pose(-.12*w,.22*w,-.16*w-hit*.18,-38*w+hit*24,12*w,-16*w,w);
-            case BOW -> new Pose(-.23*w,.1*w,-.2*w+hit*.12,-8*w,-28*w,-12*w,w);
+            case BOW -> new Pose(.12*w,-.18*w,-.12*w+hit*.025,-3*w,6*w,-4*w,w);
             case SHIELD -> new Pose(-.3*w,.2*w,-.12*w-hit*.25,-15*w,35*w,-8*w,w);
             case THRUST -> new Pose(-.1*w,.08*w,.14*w-hit*.65,-12*w+hit*10,-8*w,8*w,w);
             case HEAVY -> new Pose(.12*w,.38*w-hit*.35,.08*w,-75*w+hit*90,18*w,30*w-hit*55,w);

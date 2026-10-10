@@ -18,7 +18,11 @@ public final class ClientState {
     public String world="";
     public HudTheme hud=new HudTheme(null);
     public int level=1;
-    public long xp,xpNext;
+    public long xp,xpNext,dailyXp,dailyCap;
+    public int classLevelCap;
+    public boolean classCapped,dailyCapped;
+    public boolean learned(Skill s){return s!=null&&level>=s.unlockLevel();}
+    public int xpColor(int normal){return classCapped?0xFF43C96B:dailyCapped?0xFFE14444:normal;}
     public double health,maxHealth,resource,maxResource;
     public List<String> slots=List.of();
     public final Map<String,Double> stats=new LinkedHashMap<>();
@@ -35,7 +39,7 @@ public final class ClientState {
     public double castingProgress(long now) { return castingTotal<=0?0:Math.max(0,Math.min(1,1-(castingRemaining-Math.max(0,now-castingReceived))/(double)castingTotal)); }
     public void clear() {
         enabled=false;classes.clear();pending.clear();slots=List.of();cooldownEnds.clear();stats.clear();lastUpdate=0;
-        clearPoints();combat.clear();world="";hud=new HudTheme(null);
+        clearPoints();combat.clear();classCapped=false;dailyCapped=false;dailyXp=0;dailyCap=0;classLevelCap=0;world="";hud=new HudTheme(null);
         castingName="";castingTotal=0;
     }
     public ClassInfo currentClass() { return classes.get(classId); }
@@ -55,6 +59,8 @@ public final class ClientState {
                 name=o.get("name").getAsString();classId=next;group=o.get("group").getAsString();
                 try { hud=new HudTheme(o.has("hud")?o.getAsJsonObject("hud"):null); } catch(RuntimeException invalid) { hud=new HudTheme(null); }
                 world=o.has("world")?o.get("world").getAsString():"";
+                classCapped=o.has("classCapped")&&o.get("classCapped").getAsBoolean();dailyCapped=o.has("dailyCapped")&&o.get("dailyCapped").getAsBoolean();
+                dailyXp=o.has("dailyXp")?o.get("dailyXp").getAsLong():0;dailyCap=o.has("dailyCap")?o.get("dailyCap").getAsLong():0;classLevelCap=o.has("classLevelCap")?o.get("classLevelCap").getAsInt():0;
                 level=o.get("level").getAsInt();xp=o.get("xp").getAsLong();xpNext=o.get("xpNext").getAsLong();
                 health=number(o,"health");maxHealth=number(o,"maxHealth");resource=number(o,"resource");maxResource=number(o,"maxResource");
                 slots=List.copyOf(order);stats.clear();o.getAsJsonObject("stats").entrySet().forEach(e->stats.put(e.getKey(),e.getValue().getAsDouble()));
