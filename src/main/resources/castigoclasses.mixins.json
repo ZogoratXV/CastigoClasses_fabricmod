@@ -2,6 +2,6 @@
   "required": true,
   "package": "it.castigo.classes.client.mixin",
   "compatibilityLevel": "JAVA_25",
-  "client": ["KeyboardMixin", "MouseMixin", "ExperienceBarMixin", "WeaponHandMixin", "WeaponBodyMixin"],
+  "client": ["KeyboardMixin", "MouseMixin", "ExperienceBarMixin", "WeaponHandMixin", "WeaponBodyMixin", "CombatAttackMixin"],
   "injectors": { "defaultRequire": 1 }
 }

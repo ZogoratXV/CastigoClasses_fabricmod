@@ -36,12 +36,13 @@ public final class CastigoClient implements ClientModInitializer {
                 JsonObject o=JsonParser.parseString(payload.json()).getAsJsonObject();if(o.get("v").getAsInt()!=1)return;
                 if(o.get("type").getAsString().equals("vfx"))ClientEffects.receive(o,context.client());
                 else if(o.get("type").getAsString().equals("weapon_grip"))WeaponAnimations.receiveGrip(o,context.client());
+                else if(o.get("type").getAsString().equals("weapon_motion_v2"))CombatAnimations.receive(o,context.client());
                 else if(o.get("type").getAsString().equals("weapon_motion"))WeaponAnimations.receive(o,context.client());
                 else if(o.get("type").getAsString().equals("vfx_stop"))ClientEffects.stop(o.get("handle").getAsString());
                 else if(o.get("type").getAsString().equals("diagnostics"))diagnose(context.client());
                 else if(o.get("type").getAsString().equals("feedback")) {
                     if(context.client().player!=null)context.client().player.sendOverlayMessage(Component.literal(o.get("message").getAsString()));
-                } else STATE.receive(o);
+                } else {STATE.receive(o);if(o.get("type").getAsString().equals("state"))CombatAnimations.context(o,context.client());}
             } catch(RuntimeException ignored) { /* Unknown or malformed server data is ignored. */ }
         }));
         ClientPlayConnectionEvents.JOIN.register((handler,sender,client)->reset());
@@ -51,7 +52,7 @@ public final class CastigoClient implements ClientModInitializer {
         editor=KeyMappingHelper.registerKeyMapping(new KeyMapping("key.castigoclasses.editor",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_K,category));
         ClientTickEvents.END_CLIENT_TICK.register(client-> {
             ClientEffects.tick(client);
-            WeaponAnimations.tick(client);
+            WeaponAnimations.tick(client);CombatAnimations.tick(client);
             if(client.player==null)return;
             if(!STATE.active()&&++handshakeTicks>=40) { handshakeTicks=0;request("hello",new JsonObject()); }
             while(toggle.consumeClick()) {
@@ -87,11 +88,11 @@ public final class CastigoClient implements ClientModInitializer {
             if(STATE.active()&&!Minecraft.getInstance().gui.hud.isHidden()) { CastigoHud.portrait(graphics);CastigoHud.casting(graphics); }
         });
     }
-    private static void reset() { STATE.clear();ClientEffects.clear();WeaponAnimations.clear();skillMode=false;handshakeTicks=35; }
+    private static void reset() { STATE.clear();ClientEffects.clear();WeaponAnimations.clear();CombatAnimations.clear();skillMode=false;handshakeTicks=35; }
     public static boolean isSkillMode() { return skillMode&&STATE.active(); }
     public static void request(String type,JsonObject o) {
         if(Minecraft.getInstance().getConnection()==null||!ClientPlayNetworking.canSend(ClassesPayload.TYPE))return;
-        if(type.equals("hello")) { o.addProperty("clientVfx",1);o.addProperty("healingBeam",1);o.addProperty("meshVfx",2); }
+        if(type.equals("hello")) { o.addProperty("clientVfx",1);o.addProperty("healingBeam",1);o.addProperty("meshVfx",2);o.addProperty("weaponAnimations",2); }
         o.addProperty("v",1);o.addProperty("type",type);ClientPlayNetworking.send(new ClassesPayload(o.toString()));
     }
     public static void reorder(List<String> slots) {

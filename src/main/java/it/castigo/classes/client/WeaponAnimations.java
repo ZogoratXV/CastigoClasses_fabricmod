@@ -62,6 +62,7 @@ public final class WeaponAnimations {
         stack.mulPose(Axis.XP.rotationDegrees((float)c.get("firstPitch")));stack.mulPose(Axis.YP.rotationDegrees((float)(c.get("firstYaw")*sign)));stack.mulPose(Axis.ZP.rotationDegrees((float)(c.get("firstRoll")*sign)));
     }
     public static void firstPerson(int entity,InteractionHand hand,PoseStack stack) {
+        if(CombatAnimations.firstPerson(entity,hand,stack))return;
         if(hand==InteractionHand.MAIN_HAND&&gripping(entity)){
             var player=Minecraft.getInstance().player;double sign=player!=null&&player.getMainArm()==HumanoidArm.LEFT?-1:1;
             offset(stack,grips.get(entity).calibration,sign);stack.translate(-.16*sign,-.12,-.12);stack.mulPose(Axis.YP.rotationDegrees((float)(-12*sign)));
@@ -73,6 +74,7 @@ public final class WeaponAnimations {
         stack.mulPose(Axis.YP.rotationDegrees((float)(p.yaw()*sign*intensity)));stack.mulPose(Axis.ZP.rotationDegrees((float)(p.roll()*sign*intensity)));
     }
     public static void thirdPerson(HumanoidRenderState state,HumanoidModel<?> model) {
+        if(CombatAnimations.thirdPerson(state,model))return;
         if(!(state instanceof AvatarRenderState avatar)||avatar.isSpectator||state.isUsingItem)return;
         boolean grip=gripping(avatar.id);
         if(grip){

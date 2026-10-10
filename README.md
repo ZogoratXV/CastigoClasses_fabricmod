@@ -1,6 +1,10 @@
 # CastigoClasses — mod Fabric
 
-Companion client **0.1.0-beta.15** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin). I VFX client richiedono il plugin 0.1.0-beta.3 con CastigoCore beta.9; i punti attributo richiedono almeno il plugin beta.2. Con beta.1 rimangono disponibili HUD e skill, senza pulsanti di assegnazione (protocollo v1 compatibile).
+Companion client **0.1.0-beta.16** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin). I VFX client richiedono il plugin 0.1.0-beta.3 con CastigoCore beta.9; i punti attributo richiedono almeno il plugin beta.2. Con beta.1 rimangono disponibili HUD e skill, senza pulsanti di assegnazione (protocollo v1 compatibile).
+
+## Animazioni di combattimento — beta.16
+
+Animazioni originali per attacchi normali e skill, movimenti del busto e delle braccia, profili per arma dalla GUI e sincronizzazione cosmetica tra client. Purpur resta senza mod; Better Combat non è richiesto. Danni e cooldown invariati. [Guida beta.16](docs/AGGIORNAMENTO-BETA16.md). Aggiornare entrambi i JAR.
 
 ## Strumenti RP e regolazioni — beta.15
 
