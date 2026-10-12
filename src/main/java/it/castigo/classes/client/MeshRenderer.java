@@ -9,9 +9,10 @@ import java.util.*;
 
 /** Extract immutable geometry first, then submit to Minecraft's translucent feature pass. */
 public final class MeshRenderer {
-    private record Draw(EffectMessage.Position center,MeshGeometry.Layer layer) {}
+    private record Draw(EffectMessage.Position center,MeshGeometry.Layer layer,float opacity) {}
     private static final RenderStateDataKey<List<Draw>> FRAMES=RenderStateDataKey.create(()->"Castigo VFX meshes");
     private MeshRenderer() {}
+    static int fadedColor(int color,float opacity) { return (color&0x00FFFFFF)|((int)((color>>>24)*Math.clamp(opacity,0,1))<<24); }
     public static void register() {
         LevelExtractionEvents.END_EXTRACTION.register(context->{
             var camera=context.levelState().cameraRenderState.pos;
@@ -26,7 +27,7 @@ public final class MeshRenderer {
                 if(effect.model()==null&&effect.shape()==EffectMessage.Shape.MESH_SIGIL)effect=effect.positioned(effect.from(),e.center(),new EffectMessage.Position(eye.x()-e.center().x(),0,eye.z()-e.center().z()));
                 for(var layer:MeshGeometry.build(effect,e.age(),e.center().distanceSquared(eye)>24*24)) {
                     int count=Math.min(layer.vertices().size()/4,8192-quads);if(count<=0)break;
-                    draws.add(new Draw(e.center(),count*4==layer.vertices().size()?layer:new MeshGeometry.Layer(layer.texture(),layer.vertices().subList(0,count*4))));quads+=count;
+                    draws.add(new Draw(e.center(),count*4==layer.vertices().size()?layer:new MeshGeometry.Layer(layer.texture(),layer.vertices().subList(0,count*4)),e.opacity()));quads+=count;
                 }
             }
             context.levelState().setData(FRAMES,List.copyOf(draws));
@@ -39,7 +40,7 @@ public final class MeshRenderer {
                     pose.translate(draw.center.x()-camera.x,draw.center.y()-camera.y,draw.center.z()-camera.z);
                     context.submitNodeCollector().submitCustomGeometry(pose,
                             RenderTypes.entityTranslucentEmissive(Identifier.parse(draw.layer.texture())),(transform,vertices)->{
-                        for(var v:draw.layer.vertices())vertices.addVertex(transform,v.x(),v.y(),v.z()).setColor(v.color())
+                        for(var v:draw.layer.vertices())vertices.addVertex(transform,v.x(),v.y(),v.z()).setColor(fadedColor(v.color(),draw.opacity))
                                 .setUv(v.u(),v.v()).setOverlay(OverlayTexture.NO_OVERLAY).setLight(0xF000F0).setNormal(transform,0,1,0);
                     });
                 } finally { pose.popPose(); }

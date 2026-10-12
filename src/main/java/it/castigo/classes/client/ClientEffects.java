@@ -20,10 +20,11 @@ public final class ClientEffects {
         final EffectMessage effect;
         final ParticleOptions particle;
         int age,index,phase;
+        boolean detached;int ending=-1;
         EffectMessage.Position center;
         Animation(EffectMessage effect,ParticleOptions particle) { this.effect=effect;this.particle=particle;center=effect.model()!=null&&effect.target()!=null?new EffectMessage.Position(effect.at().x(),effect.at().y()+effect.anchorHeight(),effect.at().z()):effect.at(); }
     }
-    public record MeshFrame(EffectMessage effect,EffectMessage.Position center,double age) {}
+    public record MeshFrame(EffectMessage effect,EffectMessage.Position center,double age,float opacity) {}
     private static net.minecraft.world.entity.Entity target(EffectMessage e) {
         if(e.target()==null||level==null)return null;
         var entity=e.targetEntity()<0?level.getPlayerByUUID(e.target()):level.getEntity(e.targetEntity());
@@ -34,15 +35,24 @@ public final class ClientEffects {
         for(var a:active)if(handle.equals(a.effect.handle())&&"08_santuario_di_luce:loop".equals(a.effect.model())){
             var e=a.effect;ending=new Animation(new EffectMessage(e.world(),e.shape(),a.center,a.center,e.points(),32,e.radius(),e.particles(),e.sound(),null,e.mesh(),-1,null,e.direction(),null,0,"08_santuario_di_luce:end"),null);break;
         }
-        active.removeIf(a->handle.equals(a.effect.handle()));if(ending!=null&&active.size()<MAX_ACTIVE)active.add(ending);
+        for(var it=active.iterator();it.hasNext();) {
+            var a=it.next();if(!handle.equals(a.effect.handle()))continue;
+            if(ending==null&&a.effect.model()!=null&&a.effect.model().endsWith(":loop"))finish(a);
+            else it.remove();
+        }
+        if(ending!=null&&active.size()<MAX_ACTIVE)active.add(ending);
+    }
+    private static void finish(Animation a) {
+        a.detached=true;
+        if(a.ending<0)a.ending=8;
     }
     public static List<MeshFrame> meshFrames(ClientLevel extractingLevel,float partial) {
-        if(extractingLevel!=level||!CastigoClient.STATE.active())return List.of();
+        if(extractingLevel!=level||!CastigoClient.STATE.hudActive())return List.of();
         var frames=new ArrayList<MeshFrame>();
         for(var a:active)if(a.effect.hasMesh()&&a.age>=0) {
             var center=a.center;
-            if(a.effect.target()!=null) {
-                var target=target(a.effect);if(target==null){if(a.effect.handle()!=null)continue;}else{
+            if(a.effect.target()!=null&&!a.detached) {
+                var target=target(a.effect);if(target==null){if(a.effect.handle()!=null) { if(a.effect.model()!=null&&a.effect.model().endsWith(":loop"))finish(a);else continue; }else a.detached=true;}else{
                 var p=target.getPosition(partial);center=new EffectMessage.Position(p.x,p.y+a.effect.anchorHeight(),p.z);}
             }
             if(a.effect.model()!=null&&a.effect.model().endsWith(":flight")&&a.effect.from().distanceSquared(a.effect.at())>1) {
@@ -51,13 +61,14 @@ public final class ClientEffects {
             var start=a.effect.from();var direction=a.effect.direction();
             if(a.effect.source()!=null) {
                 var source=level.getPlayerByUUID(a.effect.source());
-                if(source==null||!source.isAlive())continue;
-                var p=source.getPosition(partial);start=new EffectMessage.Position(p.x,p.y+source.getEyeHeight(),p.z);
+                if(source!=null&&source.isAlive()&&!a.detached) {
+                    var p=source.getPosition(partial);start=new EffectMessage.Position(p.x,p.y+source.getEyeHeight(),p.z);
+                }
             }
-            if(a.effect.shape()==EffectMessage.Shape.MESH_SHIELD&&target(a.effect)!=null) {
+            if(!a.detached&&a.effect.shape()==EffectMessage.Shape.MESH_SHIELD&&target(a.effect)!=null) {
                 var look=target(a.effect).getLookAngle();direction=new EffectMessage.Position(look.x,look.y,look.z);
             }
-            frames.add(new MeshFrame(a.effect.positioned(start,center,direction),center,Math.max(0,a.phase-1+partial)));
+            frames.add(new MeshFrame(a.effect.positioned(start,center,direction),center,Math.max(0,a.phase-1+partial),a.ending<0?1:(float)Math.clamp((a.ending-partial)/8.0,0,1)));
         }
         return List.copyOf(frames);
     }
@@ -70,7 +81,7 @@ public final class ClientEffects {
     }
     public static void receive(JsonObject o,Minecraft client) {
         context(client);
-        if(client.level==null||client.player==null||!CastigoClient.STATE.active())return;
+        if(client.level==null||client.player==null||!CastigoClient.STATE.hudActive())return;
         EffectMessage e=EffectMessage.read(o);
         if(!e.world().equals(world)||!e.near(new EffectMessage.Position(client.player.getX(),client.player.getY(),client.player.getZ()),64))return;
         int phase=0;
@@ -85,15 +96,23 @@ public final class ClientEffects {
     }
     public static void tick(Minecraft client) {
         context(client);
-        if(client.level==null||client.player==null||!CastigoClient.STATE.active()) { active.clear();return; }
+        if(client.level==null||client.player==null||!CastigoClient.STATE.hudActive()) { active.clear();return; }
         int budget=MAX_PARTICLES_PER_TICK,audioBudget=MAX_SOUNDS_PER_TICK;
         var observer=new EffectMessage.Position(client.player.getX(),client.player.getY(),client.player.getZ());
         for(var iterator=active.iterator();iterator.hasNext();) {
             Animation a=iterator.next();EffectMessage e=a.effect;
+            if(a.ending==0){iterator.remove();continue;}
+            if(a.ending>0)a.ending--;
             if(a.age<0){a.age++;continue;}
-            if(e.hasMesh()&&e.target()!=null) {
+            if(e.hasMesh()&&e.target()!=null&&!a.detached) {
                 var target=target(e);
-                if(target==null) { if(e.handle()!=null){iterator.remove();continue;} }
+                if(target==null) {
+                    a.detached=true;
+                    if(e.handle()!=null) {
+                        if(e.model()!=null&&e.model().endsWith(":loop"))finish(a);
+                        else {iterator.remove();continue;}
+                    }
+                }
                 else a.center=new EffectMessage.Position(target.getX(),target.getY()+e.anchorHeight(),target.getZ());
             }
             if(e.hasMesh()&&e.shape()!=EffectMessage.Shape.MESH_BEAM?a.center.distanceSquared(observer)>64*64:!e.near(observer,64)) { iterator.remove();continue; }
@@ -119,7 +138,7 @@ public final class ClientEffects {
                             a.center.y()+point.y()*e.mesh().height()/2.8+random.nextGaussian()*spread,
                             a.center.z()+point.z()+random.nextGaussian()*spread,0,0.025,0);
                 }
-                if(++a.age>=e.durationTicks())iterator.remove();
+                if(++a.age>=e.durationTicks()&&a.ending<0)iterator.remove();
                 continue;
             }
             int end=e.samplesThroughTick(a.age);
