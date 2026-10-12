@@ -52,20 +52,30 @@ public final class CastigoHud {
         Identifier skin=mc.player.getSkin().body().texturePath();
         g.blit(skin,hx,hy,hx+size,hy+size,8/64f,16/64f,8/64f,16/64f);
         g.blit(skin,hx,hy,hx+size,hy+size,40/64f,48/64f,8/64f,16/64f);
-        int tx=x+theme.number("textX"),available=w-theme.number("textX")-6;
-        g.text(mc.font,trim(s.name+" · "+s.level,available),tx,y+theme.number("nameY"),text);
-        scaledText(g,c.name(),tx,y+theme.number("classY"),available,border,theme.number("textScale"));
-        if(!s.group.isBlank())scaledText(g,s.group,tx,y+theme.number("groupY"),available,text,theme.number("textScale"));
+        int tx=x+theme.number("textX"),available=w-theme.number("textX")-16;
+        portraitText(g,s.name+" · "+s.level,tx,y+theme.number("nameY"),available,text,theme.number("textScale"));
+        portraitText(g,c.name(),tx,y+theme.number("classY"),available,border,theme.number("textScale"));
+        if(!s.group.isBlank())portraitText(g,s.group,tx,y+theme.number("groupY"),available,text,theme.number("textScale"));
         int bx=x+theme.number("barsX"),bw=theme.number("barsWidth");
         meter(g,bx,y+theme.number("healthY"),bw,s.health,s.maxHealth,theme.color("healthColor",0xFFA5343E),
                 "Vita "+value(s.health)+" / "+value(s.maxHealth),border,text,theme.number("barHeight"),theme.number("barTextScale"),!hasTexture);
         meter(g,bx,y+theme.number("resourceY"),bw,s.resource,s.maxResource,theme.color("resourceColor",0xFF000000|c.resourceColor()),
                 c.resourceName()+" "+value(s.resource)+" / "+value(s.maxResource),border,text,theme.number("barHeight"),theme.number("barTextScale"),!hasTexture);
-        int xpY=y+theme.number("xpY");g.fill(bx,xpY,bx+bw,xpY+2,0xFF3C3020);
+        int xpY=y+theme.number("xpY");
         double progress=s.classCapped||s.dailyCapped||s.xpNext==0?1:Math.max(0,Math.min(1,(double)s.xp/s.xpNext));
-        g.fill(bx,xpY,bx+(int)(bw*progress),xpY+2,s.xpColor(border));
+        int gap=theme.text("texture").equals("castigoclasses:textures/gui/hud/mago_nero.png")?4:0;
+        int half=(bw-gap)/2,filled=(int)((bw-gap)*progress);
+        g.fill(bx,xpY,bx+half,xpY+2,0xFF3C3020);g.fill(bx+half+gap,xpY,bx+bw,xpY+2,0xFF3C3020);
+        g.fill(bx,xpY,bx+Math.min(half,filled),xpY+2,s.xpColor(border));
+        if(filled>half)g.fill(bx+half+gap,xpY,bx+gap+filled,xpY+2,s.xpColor(border));
     }
 
+    private static void portraitText(GuiGraphicsExtractor g,String value,int x,int y,int width,int color,int percent){
+        if(CastigoClient.STATE.hud.text("texture").startsWith("castigoclasses:textures/gui/hud/")){
+            String shown=trim(value,(int)(width/(percent/100f)));x+=Math.max(0,(width-Math.round(Minecraft.getInstance().font.width(shown)*percent/100f))/2);value=shown;
+        }
+        scaledText(g,value,x,y,width,color,percent);
+    }
     private static void scaledText(GuiGraphicsExtractor g,String value,int x,int y,int width,int color,int percent){
         float scale=percent/100f;g.pose().pushMatrix();try{g.pose().translate(x,y);g.pose().scale(scale,scale);g.text(Minecraft.getInstance().font,trim(value,(int)(width/scale)),0,0,color);}finally{g.pose().popMatrix();}
     }

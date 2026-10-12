@@ -5,9 +5,10 @@ import java.util.UUID;
 
 /** Strict bounds before a network message can allocate animation/render work. */
 public record EffectMessage(String world,Shape shape,Position from,Position at,int points,int durationTicks,
-                            double radius,Particles particles,Audio sound,UUID target,MeshSettings mesh,int targetEntity,UUID source,Position direction,String handle,double anchorHeight) {
+                            double radius,Particles particles,Audio sound,UUID target,MeshSettings mesh,int targetEntity,UUID source,Position direction,String handle,double anchorHeight,String model) {
+    public EffectMessage(String world,Shape shape,Position from,Position at,int points,int durationTicks,double radius,Particles particles,Audio sound,UUID target,MeshSettings mesh,int targetEntity,UUID source,Position direction,String handle,double anchorHeight){this(world,shape,from,at,points,durationTicks,radius,particles,sound,target,mesh,targetEntity,source,direction,handle,anchorHeight,null);}
     public enum Shape { BURST, LINE, RING, SPIRAL, HEALING_BEAM, MESH_RING, MESH_COLUMN, MESH_SLASH, MESH_SHIELD, MESH_BEAM, MESH_BURST, MESH_VORTEX, MESH_SIGIL, MESH_WAVE, MESH_THRUST }
-    public boolean hasMesh() { return shape==Shape.HEALING_BEAM||shape.name().startsWith("MESH_"); }
+    public boolean hasMesh() { return model!=null||shape==Shape.HEALING_BEAM||shape.name().startsWith("MESH_"); }
     public record Position(double x,double y,double z) {
         public double distanceSquared(Position p) { return square(x-p.x)+square(y-p.y)+square(z-p.z); }
     }
@@ -21,17 +22,17 @@ public record EffectMessage(String world,Shape shape,Position from,Position at,i
         String category=s.get("category").getAsString();
         if(!java.util.Set.of("MASTER","MUSIC","RECORDS","WEATHER","BLOCKS","HOSTILE","NEUTRAL","PLAYERS","AMBIENT","VOICE").contains(category))throw new IllegalArgumentException("Unknown sound category");
         return new EffectMessage(world,Shape.valueOf(o.get("shape").getAsString()),from,at,
-                integer(o,"points",2,32),integer(o,"durationTicks",1,40),number(o,"radius",0.1,12),
+                integer(o,"points",2,32),o.has("model")&&o.has("modelTicks")?integer(o,"modelTicks",1,600):integer(o,"durationTicks",1,40),number(o,"radius",0.1,12),
                 new Particles(p.get("enabled").getAsBoolean(),identifier(p,"id"),integer(p,"count",1,32),number(p,"spread",0,2),
                         p.has("color")?integer(p,"color",0,0xFFFFFF):0xFFFFFF,p.has("size")?(float)number(p,"size",0.05,4):1.2f),
                 new Audio(s.get("enabled").getAsBoolean(),identifier(s,"id"),category,(float)number(s,"volume",0,2),(float)number(s,"pitch",0.5,2)),
                 o.has("target")?UUID.fromString(o.get("target").getAsString()):null,MeshSettings.read(o.has("mesh")?o.getAsJsonObject("mesh"):null),
                 o.has("targetEntity")?integer(o,"targetEntity",0,Integer.MAX_VALUE):-1,o.has("source")?UUID.fromString(o.get("source").getAsString()):null,
                 o.has("direction")?position(o.getAsJsonArray("direction")):new Position(0,0,1),o.has("handle")?UUID.fromString(o.get("handle").getAsString()).toString():null,
-                o.has("anchorHeight")?number(o,"anchorHeight",-2,12):0);
+                o.has("model")&&o.has("modelAnchorHeight")?number(o,"modelAnchorHeight",-2,12):o.has("anchorHeight")?number(o,"anchorHeight",-2,12):0,o.has("model")?BlockbenchModels.validate(o.get("model").getAsString()):null);
     }
     public EffectMessage positioned(Position start,Position end,Position facing) {
-        return new EffectMessage(world,shape,start,end,points,durationTicks,radius,particles,sound,target,mesh,targetEntity,source,facing,handle,anchorHeight);
+        return new EffectMessage(world,shape,start,end,points,durationTicks,radius,particles,sound,target,mesh,targetEntity,source,facing,handle,anchorHeight,model);
     }
     public int sampleCount() { return shape==Shape.BURST?1:points; }
     public int samplesThroughTick(int age) {

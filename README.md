@@ -1,3 +1,5 @@
+**Aggiornamento beta.17:** [installazione, HUD incluse e 40 modelli Blockbench](docs/AGGIORNAMENTO-BETA17.md). Richiede CastigoCore beta.28 sul server.
+
 # CastigoClasses — mod Fabric
 
 Companion client **0.1.0-beta.16** per [CastigoClasses plugin](https://github.com/ZogoratXV/CastigoClasses_plugin). I VFX client richiedono il plugin 0.1.0-beta.3 con CastigoCore beta.9; i punti attributo richiedono almeno il plugin beta.2. Con beta.1 rimangono disponibili HUD e skill, senza pulsanti di assegnazione (protocollo v1 compatibile).

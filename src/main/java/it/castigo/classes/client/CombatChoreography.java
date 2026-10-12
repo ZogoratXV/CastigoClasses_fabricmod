@@ -1,7 +1,7 @@
 package it.castigo.classes.client;
 /** Original Castigo key poses, authored independently; degrees and model-relative offsets. */
 public final class CombatChoreography {
-    public enum Profile { VANILLA,SWORD,TWO_HANDED,AXE,THRUST,SHIELD,BOW,CAST }
+    public enum Profile { VANILLA,SWORD,TWO_HANDED,AXE,THRUST,SHIELD,BOW,CAST,BLESS,CURSE,CHANNEL,DASH,RALLY,SPIN,LOW_SWEEP }
     public record Rotation(double pitch,double yaw,double roll){
         Rotation scale(double w){return new Rotation(pitch*w,yaw*w,roll*w);}
         static Rotation mix(Rotation a,Rotation b,double t){return new Rotation(a.pitch+(b.pitch-a.pitch)*t,a.yaw+(b.yaw-a.yaw)*t,a.roll+(b.roll-a.roll)*t);}
@@ -16,6 +16,13 @@ public final class CombatChoreography {
     private static double smooth(double t){t=Math.clamp(t,0,1);return t*t*(3-2*t);}
     private static Frame pose(double mp,double my,double mr,double sp,double sy,double sr,double bp,double by,double br,double x,double y,double z,double pitch,double yaw,double roll){return new Frame(new Rotation(mp,my,mr),new Rotation(sp,sy,sr),new Rotation(bp,by,br),x,y,z,pitch,yaw,roll);}
     private static Frame windup(Profile p,int variant){double side=(variant&1)==0?1:-1;return switch(p){
+        case BLESS -> pose(-95,-32,25,-90,32,-25,-3,0,0,.04,-.14,-.03,-12,5,8);
+        case CURSE -> pose(-115,30,-18,-45,-22,16,-6,-18,0,.12,-.10,.06,-22,18,-12);
+        case CHANNEL -> pose(-135,-35,35,-135,35,-35,-5,0,0,.08,-.14,0,-15,8,10);
+        case DASH -> pose(-55,-12,12,-75,22,-18,12,0,0,.12,-.22,.08,-12,5,6);
+        case RALLY -> pose(-130,10,22,-90,-18,-22,-8,8,0,.08,-.15,.04,-20,8,12);
+        case SPIN -> pose(-90,42,32,-95,-35,-25,-6,-40,0,.12,-.15,.10,-15,25,22);
+        case LOW_SWEEP -> pose(-55,30,25,-60,-25,-22,15,-30,5,.10,-.22,.06,12,20,18);
         case VANILLA -> REST;
         case SWORD -> pose(-100,35*side,42*side,-20,-12,-8,-4,-24*side,3*side,.12*side,-.06,.08,-28,20*side,22*side);
         case TWO_HANDED -> pose(-125,25*side,28*side,-110,-35*side,-20*side,-8,-28*side,4*side,-.12,-.06,.12,-40,15*side,16*side);
@@ -26,6 +33,13 @@ public final class CombatChoreography {
         case CAST -> pose(-110,-20,15,-90,28,-18,-4,-10,0,-.04,-.08,-.04,-25,-8,10);
     };}
     private static Frame contact(Profile p,int variant){double side=(variant&1)==0?1:-1;return switch(p){
+        case BLESS -> pose(-80,-18,30,-80,18,-30,2,0,0,.04,-.17,-.18,5,3,5);
+        case CURSE -> pose(-92,-10,-8,-60,20,18,7,20,0,.08,-.14,-.26,10,-10,-8);
+        case CHANNEL -> pose(-105,-42,40,-105,42,-40,2,0,0,.08,-.20,-.20,10,8,8);
+        case DASH -> pose(-70,-8,10,-85,18,-12,16,0,0,.14,-.24,-.20,5,5,4);
+        case RALLY -> pose(-100,-15,30,-100,15,-30,-2,0,0,.08,-.18,-.10,5,8,10);
+        case SPIN -> pose(-70,-45,-32,-75,35,25,7,40,-5,-.15,-.18,-.20,15,-25,-22);
+        case LOW_SWEEP -> pose(-38,-35,-22,-45,30,20,20,32,-6,-.12,-.28,-.25,20,-22,-18);
         case VANILLA -> REST;
         case SWORD -> pose(-72,-32*side,-32*side,-18,12,8,7,22*side,-4*side,-.15*side,-.12,-.20,18,-28*side,-24*side);
         case TWO_HANDED -> pose(-75,-35*side,-20*side,-80,30*side,15*side,10,28*side,-5*side,-.12,-.14,-.26,24,-24*side,-20*side);

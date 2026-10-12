@@ -21,7 +21,7 @@ public final class ClientEffects {
         final ParticleOptions particle;
         int age,index,phase;
         EffectMessage.Position center;
-        Animation(EffectMessage effect,ParticleOptions particle) { this.effect=effect;this.particle=particle;center=effect.at(); }
+        Animation(EffectMessage effect,ParticleOptions particle) { this.effect=effect;this.particle=particle;center=effect.model()!=null&&effect.target()!=null?new EffectMessage.Position(effect.at().x(),effect.at().y()+effect.anchorHeight(),effect.at().z()):effect.at(); }
     }
     public record MeshFrame(EffectMessage effect,EffectMessage.Position center,double age) {}
     private static net.minecraft.world.entity.Entity target(EffectMessage e) {
@@ -29,15 +29,24 @@ public final class ClientEffects {
         var entity=e.targetEntity()<0?level.getPlayerByUUID(e.target()):level.getEntity(e.targetEntity());
         return entity!=null&&entity.getUUID().equals(e.target())&&entity.isAlive()&&!entity.isSpectator()?entity:null;
     }
-    public static void stop(String handle) { java.util.UUID.fromString(handle);active.removeIf(a->handle.equals(a.effect.handle())); }
+    public static void stop(String handle) {
+        java.util.UUID.fromString(handle);Animation ending=null;
+        for(var a:active)if(handle.equals(a.effect.handle())&&"08_santuario_di_luce:loop".equals(a.effect.model())){
+            var e=a.effect;ending=new Animation(new EffectMessage(e.world(),e.shape(),a.center,a.center,e.points(),32,e.radius(),e.particles(),e.sound(),null,e.mesh(),-1,null,e.direction(),null,0,"08_santuario_di_luce:end"),null);break;
+        }
+        active.removeIf(a->handle.equals(a.effect.handle()));if(ending!=null&&active.size()<MAX_ACTIVE)active.add(ending);
+    }
     public static List<MeshFrame> meshFrames(ClientLevel extractingLevel,float partial) {
         if(extractingLevel!=level||!CastigoClient.STATE.active())return List.of();
         var frames=new ArrayList<MeshFrame>();
-        for(var a:active)if(a.effect.hasMesh()) {
+        for(var a:active)if(a.effect.hasMesh()&&a.age>=0) {
             var center=a.center;
             if(a.effect.target()!=null) {
-                var target=target(a.effect);if(target==null)continue;
-                var p=target.getPosition(partial);center=new EffectMessage.Position(p.x,p.y+a.effect.anchorHeight(),p.z);
+                var target=target(a.effect);if(target==null){if(a.effect.handle()!=null)continue;}else{
+                var p=target.getPosition(partial);center=new EffectMessage.Position(p.x,p.y+a.effect.anchorHeight(),p.z);}
+            }
+            if(a.effect.model()!=null&&a.effect.model().endsWith(":flight")&&a.effect.from().distanceSquared(a.effect.at())>1) {
+                var f=a.effect.from();var to=a.effect.at();double t=Math.clamp((a.age+partial)/a.effect.durationTicks(),0,1);center=new EffectMessage.Position(f.x()+(to.x()-f.x())*t,f.y()+(to.y()-f.y())*t,f.z()+(to.z()-f.z())*t);
             }
             var start=a.effect.from();var direction=a.effect.direction();
             if(a.effect.source()!=null) {
@@ -66,13 +75,13 @@ public final class ClientEffects {
         if(!e.world().equals(world)||!e.near(new EffectMessage.Position(client.player.getX(),client.player.getY(),client.player.getZ()),64))return;
         int phase=0;
         if(e.handle()!=null)for(var it=active.iterator();it.hasNext();) { var a=it.next();if(e.handle().equals(a.effect.handle())) { phase=a.phase;it.remove();break; } }
-        if(active.size()>=MAX_ACTIVE)return;
+        if(active.size()>=MAX_ACTIVE||("-".equals(e.model())&&!e.sound().enabled()))return;
         ParticleOptions particle=null;
         if(e.particles().enabled()) {
             if(e.particles().id().equals("minecraft:dust"))particle=new DustParticleOptions(e.particles().color(),e.particles().size());
             else if(BuiltInRegistries.PARTICLE_TYPE.getValue(Identifier.parse(e.particles().id())) instanceof SimpleParticleType simple)particle=simple;
         }
-        var animation=new Animation(e,particle);animation.phase=phase;active.add(animation);
+        var animation=new Animation(e,particle);animation.phase=phase;if(e.model()!=null&&o.has("modelDelay"))animation.age=-Math.clamp(o.get("modelDelay").getAsInt(),0,40);active.add(animation);
     }
     public static void tick(Minecraft client) {
         context(client);
@@ -81,10 +90,11 @@ public final class ClientEffects {
         var observer=new EffectMessage.Position(client.player.getX(),client.player.getY(),client.player.getZ());
         for(var iterator=active.iterator();iterator.hasNext();) {
             Animation a=iterator.next();EffectMessage e=a.effect;
+            if(a.age<0){a.age++;continue;}
             if(e.hasMesh()&&e.target()!=null) {
                 var target=target(e);
-                if(target==null) { iterator.remove();continue; }
-                a.center=new EffectMessage.Position(target.getX(),target.getY()+e.anchorHeight(),target.getZ());
+                if(target==null) { if(e.handle()!=null){iterator.remove();continue;} }
+                else a.center=new EffectMessage.Position(target.getX(),target.getY()+e.anchorHeight(),target.getZ());
             }
             if(e.hasMesh()&&e.shape()!=EffectMessage.Shape.MESH_BEAM?a.center.distanceSquared(observer)>64*64:!e.near(observer,64)) { iterator.remove();continue; }
             if(a.age==0&&e.sound().enabled()&&e.sound().volume()>0&&audioBudget>0) {
@@ -97,6 +107,7 @@ public final class ClientEffects {
                 client.level.playLocalSound(a.center.x(),a.center.y(),a.center.z(),SoundEvent.createVariableRangeEvent(Identifier.parse(sound)),
                         SoundSource.valueOf(e.sound().category()),e.sound().volume(),e.sound().pitch(),false);
             }
+            if("-".equals(e.model())){iterator.remove();continue;}
             a.phase++;
             if(e.hasMesh()) {
                 if(a.particle!=null&&a.age%2==0)for(int i=64;i<HealingBeam.SAMPLES&&budget>0;i++) {

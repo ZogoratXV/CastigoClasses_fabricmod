@@ -1,0 +1,367 @@
+[
+  {
+    "id": "01_orison_di_cura",
+    "source": "01_Mago_bianco/01_orison_di_cura/01_orison_di_cura.bbmodel",
+    "nodes": 11,
+    "quads": 440,
+    "clips": [
+      "orison_di_cura"
+    ]
+  },
+  {
+    "id": "02_dardo_consacrato",
+    "source": "01_Mago_bianco/02_dardo_consacrato/02_dardo_consacrato.bbmodel",
+    "nodes": 21,
+    "quads": 2620,
+    "clips": [
+      "dardo_consacrato",
+      "impatto_consacrato"
+    ]
+  },
+  {
+    "id": "03_benedizione_rigenerante",
+    "source": "01_Mago_bianco/03_benedizione_rigenerante/03_benedizione_rigenerante.bbmodel",
+    "nodes": 15,
+    "quads": 2408,
+    "clips": [
+      "benedizione_rigenerante_loop"
+    ]
+  },
+  {
+    "id": "04_purificazione",
+    "source": "01_Mago_bianco/04_purificazione/04_purificazione.bbmodel",
+    "nodes": 9,
+    "quads": 984,
+    "clips": [
+      "purificazione"
+    ]
+  },
+  {
+    "id": "05_vincolo_del_custode",
+    "source": "01_Mago_bianco/05_vincolo_del_custode/05_vincolo_del_custode.bbmodel",
+    "nodes": 12,
+    "quads": 1560,
+    "clips": [
+      "vincolo_del_custode_loop"
+    ]
+  },
+  {
+    "id": "06_luce_respingente",
+    "source": "01_Mago_bianco/06_luce_respingente/06_luce_respingente.bbmodel",
+    "nodes": 20,
+    "quads": 2410,
+    "clips": [
+      "luce_respingente"
+    ]
+  },
+  {
+    "id": "07_grande_intercessione",
+    "source": "01_Mago_bianco/07_grande_intercessione/07_grande_intercessione.bbmodel",
+    "nodes": 9,
+    "quads": 2682,
+    "clips": [
+      "grande_intercessione"
+    ]
+  },
+  {
+    "id": "08_santuario_di_luce",
+    "source": "01_Mago_bianco/08_santuario_di_luce/08_santuario_di_luce.bbmodel",
+    "nodes": 31,
+    "quads": 2982,
+    "clips": [
+      "santuario_di_luce_loop",
+      "santuario_comparsa",
+      "santuario_scomparsa"
+    ]
+  },
+  {
+    "id": "09_dardo_maledetto",
+    "source": "02_Mago_nero/09_dardo_maledetto/09_dardo_maledetto.bbmodel",
+    "nodes": 23,
+    "quads": 3476,
+    "clips": [
+      "dardo_maledetto_volo",
+      "dardo_maledetto_impatto",
+      "marchio_afflizione_loop"
+    ]
+  },
+  {
+    "id": "10_malocchio",
+    "source": "02_Mago_nero/10_malocchio/10_malocchio.bbmodel",
+    "nodes": 7,
+    "quads": 1178,
+    "clips": [
+      "malocchio_loop"
+    ]
+  },
+  {
+    "id": "11_consunzione",
+    "source": "02_Mago_nero/11_consunzione/11_consunzione.bbmodel",
+    "nodes": 8,
+    "quads": 82,
+    "clips": [
+      "consunzione_loop"
+    ]
+  },
+  {
+    "id": "12_terrore_sussurrato",
+    "source": "02_Mago_nero/12_terrore_sussurrato/12_terrore_sussurrato.bbmodel",
+    "nodes": 18,
+    "quads": 696,
+    "clips": [
+      "terrore_sussurrato_loop"
+    ]
+  },
+  {
+    "id": "13_cerchio_della_rovina",
+    "source": "02_Mago_nero/13_cerchio_della_rovina/13_cerchio_della_rovina.bbmodel",
+    "nodes": 7,
+    "quads": 134,
+    "clips": [
+      "cerchio_della_rovina_loop"
+    ]
+  },
+  {
+    "id": "14_sigillo_del_tormento",
+    "source": "02_Mago_nero/14_sigillo_del_tormento/14_sigillo_del_tormento.bbmodel",
+    "nodes": 11,
+    "quads": 780,
+    "clips": [
+      "sigillo_del_tormento_loop"
+    ]
+  },
+  {
+    "id": "15_patto_del_sangue",
+    "source": "02_Mago_nero/15_patto_del_sangue/15_patto_del_sangue.bbmodel",
+    "nodes": 60,
+    "quads": 840,
+    "clips": [
+      "patto_del_sangue_proiettile"
+    ]
+  },
+  {
+    "id": "16_vortice_delle_tenebre",
+    "source": "02_Mago_nero/16_vortice_delle_tenebre/16_vortice_delle_tenebre.bbmodel",
+    "nodes": 48,
+    "quads": 1668,
+    "clips": [
+      "vortice_delle_tenebre"
+    ]
+  },
+  {
+    "id": "17_affondo_disciplinato",
+    "source": "03_Guerriero_spada_e_scudo/17_affondo_disciplinato/17_affondo_disciplinato.bbmodel",
+    "nodes": 33,
+    "quads": 433,
+    "clips": [
+      "affondo_disciplinato"
+    ]
+  },
+  {
+    "id": "18_urto_di_scudo",
+    "source": "03_Guerriero_spada_e_scudo/18_urto_di_scudo/18_urto_di_scudo.bbmodel",
+    "nodes": 40,
+    "quads": 391,
+    "clips": [
+      "urto_di_scudo"
+    ]
+  },
+  {
+    "id": "19_guardia_salda",
+    "source": "03_Guerriero_spada_e_scudo/19_guardia_salda/19_guardia_salda.bbmodel",
+    "nodes": 23,
+    "quads": 182,
+    "clips": [
+      "guardia_salda"
+    ]
+  },
+  {
+    "id": "20_passo_del_guardiano",
+    "source": "03_Guerriero_spada_e_scudo/20_passo_del_guardiano/20_passo_del_guardiano.bbmodel",
+    "nodes": 50,
+    "quads": 518,
+    "clips": [
+      "passo_del_guardiano"
+    ]
+  },
+  {
+    "id": "21_difesa_del_compagno",
+    "source": "03_Guerriero_spada_e_scudo/21_difesa_del_compagno/21_difesa_del_compagno.bbmodel",
+    "nodes": 53,
+    "quads": 430,
+    "clips": [
+      "difesa_del_compagno"
+    ]
+  },
+  {
+    "id": "22_contrattacco_del_veterano",
+    "source": "03_Guerriero_spada_e_scudo/22_contrattacco_del_veterano/22_contrattacco_del_veterano.bbmodel",
+    "nodes": 35,
+    "quads": 613,
+    "clips": [
+      "contrattacco_del_veterano"
+    ]
+  },
+  {
+    "id": "23_riscossa",
+    "source": "03_Guerriero_spada_e_scudo/23_riscossa/23_riscossa.bbmodel",
+    "nodes": 37,
+    "quads": 630,
+    "clips": [
+      "riscossa"
+    ]
+  },
+  {
+    "id": "24_baluardo",
+    "source": "03_Guerriero_spada_e_scudo/24_baluardo/24_baluardo.bbmodel",
+    "nodes": 74,
+    "quads": 558,
+    "clips": [
+      "baluardo"
+    ]
+  },
+  {
+    "id": "25_fendente_pesante",
+    "source": "04_Guerriero_due_mani/25_fendente_pesante/25_fendente_pesante.bbmodel",
+    "nodes": 70,
+    "quads": 490,
+    "clips": [
+      "fendente_pesante"
+    ]
+  },
+  {
+    "id": "26_affondo_lungo",
+    "source": "04_Guerriero_due_mani/26_affondo_lungo/26_affondo_lungo.bbmodel",
+    "nodes": 33,
+    "quads": 433,
+    "clips": [
+      "affondo_lungo"
+    ]
+  },
+  {
+    "id": "27_carica_travolgente",
+    "source": "04_Guerriero_due_mani/27_carica_travolgente/27_carica_travolgente.bbmodel",
+    "nodes": 45,
+    "quads": 616,
+    "clips": [
+      "carica_travolgente"
+    ]
+  },
+  {
+    "id": "28_colpo_di_arresto",
+    "source": "04_Guerriero_due_mani/28_colpo_di_arresto/28_colpo_di_arresto.bbmodel",
+    "nodes": 73,
+    "quads": 290,
+    "clips": [
+      "colpo_di_arresto"
+    ]
+  },
+  {
+    "id": "29_fendente_circolare",
+    "source": "04_Guerriero_due_mani/29_fendente_circolare/29_fendente_circolare.bbmodel",
+    "nodes": 105,
+    "quads": 496,
+    "clips": [
+      "fendente_circolare"
+    ]
+  },
+  {
+    "id": "30_falciata_bassa",
+    "source": "04_Guerriero_due_mani/30_falciata_bassa/30_falciata_bassa.bbmodel",
+    "nodes": 105,
+    "quads": 616,
+    "clips": [
+      "falciata_bassa"
+    ]
+  },
+  {
+    "id": "31_spezzaguardia",
+    "source": "04_Guerriero_due_mani/31_spezzaguardia/31_spezzaguardia.bbmodel",
+    "nodes": 39,
+    "quads": 493,
+    "clips": [
+      "spezzaguardia"
+    ]
+  },
+  {
+    "id": "32_sequenza_del_campione",
+    "source": "04_Guerriero_due_mani/32_sequenza_del_campione/32_sequenza_del_campione.bbmodel",
+    "nodes": 134,
+    "quads": 682,
+    "clips": [
+      "sequenza_del_campione"
+    ]
+  },
+  {
+    "id": "33_tiro_preciso",
+    "source": "05_Arciere/33_tiro_preciso/33_tiro_preciso.bbmodel",
+    "nodes": 36,
+    "quads": 369,
+    "clips": [
+      "tiro_preciso"
+    ]
+  },
+  {
+    "id": "34_passo_del_cacciatore",
+    "source": "05_Arciere/34_passo_del_cacciatore/34_passo_del_cacciatore.bbmodel",
+    "nodes": 27,
+    "quads": 291,
+    "clips": [
+      "passo_del_cacciatore"
+    ]
+  },
+  {
+    "id": "35_occhio_del_cacciatore",
+    "source": "05_Arciere/35_occhio_del_cacciatore/35_occhio_del_cacciatore.bbmodel",
+    "nodes": 10,
+    "quads": 302,
+    "clips": [
+      "occhio_del_cacciatore"
+    ]
+  },
+  {
+    "id": "36_disimpegno",
+    "source": "05_Arciere/36_disimpegno/36_disimpegno.bbmodel",
+    "nodes": 27,
+    "quads": 291,
+    "clips": [
+      "disimpegno"
+    ]
+  },
+  {
+    "id": "37_tiro_ostacolante",
+    "source": "05_Arciere/37_tiro_ostacolante/37_tiro_ostacolante.bbmodel",
+    "nodes": 38,
+    "quads": 465,
+    "clips": [
+      "tiro_ostacolante"
+    ]
+  },
+  {
+    "id": "38_tiro_di_copertura",
+    "source": "05_Arciere/38_tiro_di_copertura/38_tiro_di_copertura.bbmodel",
+    "nodes": 71,
+    "quads": 1305,
+    "clips": [
+      "tiro_di_copertura"
+    ]
+  },
+  {
+    "id": "39_doppio_tiro",
+    "source": "05_Arciere/39_doppio_tiro/39_doppio_tiro.bbmodel",
+    "nodes": 28,
+    "quads": 474,
+    "clips": [
+      "doppio_tiro"
+    ]
+  },
+  {
+    "id": "40_colpo_del_maestro",
+    "source": "05_Arciere/40_colpo_del_maestro/40_colpo_del_maestro.bbmodel",
+    "nodes": 65,
+    "quads": 585,
+    "clips": [
+      "colpo_del_maestro"
+    ]
+  }
+]

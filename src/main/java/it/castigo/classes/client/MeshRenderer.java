@@ -20,13 +20,13 @@ public final class MeshRenderer {
             effects.sort(Comparator.comparingDouble(e->e.center().distanceSquared(eye)));
             var draws=new ArrayList<Draw>();int quads=0,instances=0;
             for(var e:effects) {
-                if(++instances>32)break;
+                if(++instances>32||quads>=8192)break;
                 var effect=e.effect();
                 if(effect.from().distanceSquared(e.center())>128*128)continue;
-                if(effect.shape()==EffectMessage.Shape.MESH_SIGIL)effect=effect.positioned(effect.from(),e.center(),new EffectMessage.Position(eye.x()-e.center().x(),0,eye.z()-e.center().z()));
+                if(effect.model()==null&&effect.shape()==EffectMessage.Shape.MESH_SIGIL)effect=effect.positioned(effect.from(),e.center(),new EffectMessage.Position(eye.x()-e.center().x(),0,eye.z()-e.center().z()));
                 for(var layer:MeshGeometry.build(effect,e.age(),e.center().distanceSquared(eye)>24*24)) {
-                    quads+=layer.vertices().size()/4;if(quads>8192)break;
-                    draws.add(new Draw(e.center(),layer));
+                    int count=Math.min(layer.vertices().size()/4,8192-quads);if(count<=0)break;
+                    draws.add(new Draw(e.center(),count*4==layer.vertices().size()?layer:new MeshGeometry.Layer(layer.texture(),layer.vertices().subList(0,count*4))));quads+=count;
                 }
             }
             context.levelState().setData(FRAMES,List.copyOf(draws));

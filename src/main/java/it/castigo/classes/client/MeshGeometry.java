@@ -8,6 +8,7 @@ public final class MeshGeometry {
     public record Layer(String texture,List<Vertex> vertices) { public Layer { vertices=List.copyOf(vertices); } }
     private MeshGeometry() {}
     public static List<Layer> build(EffectMessage effect,double age,boolean distant) {
+        if(effect.model()!=null)return BlockbenchModels.build(effect,age,distant);
         var result=new ArrayList<>(base(effect,age,distant));
         if(effect.hasMesh()) {
             var m=effect.mesh();double life=effect.handle()==null?age/effect.durationTicks():.5;

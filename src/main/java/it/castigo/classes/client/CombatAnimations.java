@@ -72,7 +72,7 @@ public final class CombatAnimations {
         int ticks=o.get("duration").getAsInt();if(ticks<1||ticks>600||motions.size()>=128&&!motions.containsKey(id))return;
         boolean normal=o.get("normal").getAsBoolean(),off=o.get("offhand").getAsBoolean();var existing=motions.get(id);
         if(normal&&existing!=null&&!existing.normal)return;
-        var kind=CombatChoreography.parse(o.get("profile").getAsString());if(kind==CombatChoreography.Profile.VANILLA){motions.remove(id);return;}
+        var kind=CombatChoreography.parse(o.has("gesture")?o.get("gesture").getAsString():o.get("profile").getAsString());if(kind==CombatChoreography.Profile.VANILLA){motions.remove(id);return;}
         long request=normal?o.get("prediction").getAsLong():-1;
         // Keep the predicted start time on acknowledgment, preventing a second swing.
         if(normal&&p==mc.player&&(request!=prediction||lastAttack==0||System.nanoTime()-lastAttack>=ticks*50_000_000L||!sameWeapon(p.getMainHandItem(),lastWeapon)))return;
