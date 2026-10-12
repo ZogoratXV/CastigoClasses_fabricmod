@@ -36,7 +36,7 @@ public final class WeaponAnimations {
     private WeaponAnimations() {}
     public static void clear(){motions.clear();grips.clear();level=null;world="";}
     public static void tick(Minecraft mc) {
-        if(level!=mc.level||!world.equals(CastigoClient.STATE.world)||!CastigoClient.STATE.active()){clear();level=mc.level;world=CastigoClient.STATE.world;}
+        if(level!=mc.level||!world.equals(CastigoClient.STATE.world)||!CastigoClient.STATE.hudActive()){clear();level=mc.level;world=CastigoClient.STATE.world;}
         if(mc.level==null)return;
         long now=System.nanoTime();grips.entrySet().removeIf(e->now>e.getValue().expires||!gripping(e.getKey()));
         PlayerClips.pruneGrips(id->grips.containsKey(id)&&gripping(id));
@@ -67,7 +67,7 @@ public final class WeaponAnimations {
         if(CombatAnimations.firstPerson(entity,hand,stack))return;
         if(hand==InteractionHand.MAIN_HAND&&gripping(entity)){
             var player=Minecraft.getInstance().player;double sign=player!=null&&player.getMainArm()==HumanoidArm.LEFT?-1:1;
-            offset(stack,grips.get(entity).calibration,sign);stack.translate(-.16*sign,-.12,-.12);stack.mulPose(Axis.YP.rotationDegrees((float)(-12*sign)));
+            stack.translate(.06*sign,-.12,-.18);
         }
         var m=motions.get(entity);if(m==null||m.offhand!=(hand==InteractionHand.OFF_HAND))return;
         var p=m.pose();double sign=m.left?-1:1;double intensity=m.calibration.get("firstIntensity");

@@ -21,18 +21,13 @@ public abstract class WeaponHandMixin {
     // Suppress vanilla immediately, including the frame before PAL's next transition tick.
     @Inject(method="submitHandsWithItems",at=@At("HEAD"),cancellable=true)
     private void castigo$singleRenderer(float delta,PoseStack pose,SubmitNodeCollector collector,net.minecraft.client.player.LocalPlayer player,int light,CallbackInfo ci){
-        if(it.castigo.classes.client.PlayerClips.rigActive(player.getId()) && player instanceof com.zigythebird.playeranim.accessors.IAnimatedAvatar avatar
+        if(it.castigo.classes.client.PlayerClips.firstPersonRig(player.getId()) && player instanceof com.zigythebird.playeranim.accessors.IAnimatedAvatar avatar
                 && avatar.playerAnimLib$getAnimManager().isActive()
                 && avatar.playerAnimLib$getAnimManager().getFirstPersonMode()==com.zigythebird.playeranimcore.api.firstPerson.FirstPersonMode.THIRD_PERSON_MODEL)ci.cancel();
     }
     @com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod(method="submitArmWithItem")
     private void castigo$begin(AbstractClientPlayer player,float delta,float pitch,InteractionHand hand,float attack,ItemStack item,float equip,PoseStack pose,SubmitNodeCollector collector,int light,com.llamalad7.mixinextras.injector.wrapoperation.Operation<Void> original) {
         pose.pushPose();try{if(!player.isUsingItem())WeaponAnimations.firstPerson(player.getId(),hand,pose);
-        if(!it.castigo.classes.client.PlayerClips.rigActive(player.getId())&&hand==InteractionHand.MAIN_HAND&&(WeaponAnimations.gripping(player.getId())||it.castigo.classes.client.CombatAnimations.twoHanded(player.getId()))&&!player.isInvisible()){
-            pose.pushPose();float sign=player.getMainArm()==HumanoidArm.LEFT?-1:1;
-            pose.translate(.85f*sign,-.08f,-.08f);if(it.castigo.classes.client.CombatAnimations.active(player.getId(),hand))it.castigo.classes.client.CombatAnimations.supportHand(player.getId(),pose,sign);else WeaponAnimations.supportHand(player.getId(),pose,sign);
-            renderPlayerArm(pose,collector,light,equip,attack,player.getMainArm().getOpposite());pose.popPose();
-        }
         original.call(player,delta,pitch,hand,attack,item,equip,pose,collector,light);
         }finally{pose.popPose();}
     }

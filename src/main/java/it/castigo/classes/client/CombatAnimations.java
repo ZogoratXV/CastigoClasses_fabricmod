@@ -31,7 +31,7 @@ public final class CombatAnimations {
     }
     public static void clear(){PlayerClips.clear();motions.clear();transitions.clear();sequences.clear();supported=false;profile="VANILLA";contextItem=ItemStack.EMPTY;lastWeapon=ItemStack.EMPTY;calibration=new WeaponCalibration(null);lastAttack=0;variant=0;lastSlot=-1;level=null;world="";}
     public static void tick(Minecraft mc){
-        if(level!=mc.level||!world.equals(CastigoClient.STATE.world)||!CastigoClient.STATE.active()){clear();level=mc.level;world=CastigoClient.STATE.world;}
+        if(level!=mc.level||!world.equals(CastigoClient.STATE.world)||!CastigoClient.STATE.hudActive()){clear();level=mc.level;world=CastigoClient.STATE.world;}
         if(mc.level==null)return;
         transitions.values().removeIf(t->System.nanoTime()-t.at>150_000_000L);
         motions.entrySet().removeIf(e->{if(valid(e.getKey(),e.getValue(),mc))return false;PlayerClips.stop(e.getKey());return true;});
@@ -90,8 +90,16 @@ public final class CombatAnimations {
     public static void supportHand(int entity,PoseStack stack,double sign){var m=motions.get(entity);if(m!=null)stack.translate(m.calibration.get("supportX")*sign,m.calibration.get("supportY"),m.calibration.get("supportZ"));}
     public static boolean active(int entity,InteractionHand hand){var mc=Minecraft.getInstance();var m=motions.get(entity);return m!=null&&m.off==(hand==InteractionHand.OFF_HAND)&&valid(entity,m,mc);}
     public static boolean firstPerson(int entity,InteractionHand hand,PoseStack stack){
-        if(PlayerClips.rigActive(entity))return true;
-        if(!active(entity,hand))return false;var m=motions.get(entity);var f=m.frame().scale(m.calibration.get("firstIntensity"));double sign=m.left?-1:1;var c=m.calibration;
+        if(PlayerClips.firstPersonRig(entity))return true;
+        if(!active(entity,hand))return false;var m=motions.get(entity);
+        if(PlayerClips.twoHandedProfile(m.profile)){
+            var f=m.frame();double sign=m.left?-1:1;
+            stack.translate(sign*Math.clamp(f.x()*.2,-.08,.08),-.12+Math.clamp(f.y()*.2,-.06,.06),-.18+Math.clamp(f.z()*.2,-.06,.06));
+            stack.mulPose(Axis.XP.rotationDegrees((float)Math.clamp(f.pitch()*.2,-12,12)));
+            stack.mulPose(Axis.YP.rotationDegrees((float)(sign*Math.clamp(f.yaw()*.2,-12,12))));
+            stack.mulPose(Axis.ZP.rotationDegrees((float)(sign*Math.clamp(f.roll()*.2,-15,15))));return true;
+        }
+        var f=m.frame().scale(m.calibration.get("firstIntensity"));double sign=m.left?-1:1;var c=m.calibration;
         stack.translate((f.x()+c.get("firstX"))*sign,f.y()+c.get("firstY"),f.z()+c.get("firstZ"));
         stack.mulPose(Axis.XP.rotationDegrees((float)(f.pitch()+c.get("firstPitch"))));stack.mulPose(Axis.YP.rotationDegrees((float)((f.yaw()+c.get("firstYaw"))*sign)));stack.mulPose(Axis.ZP.rotationDegrees((float)((f.roll()+c.get("firstRoll"))*sign)));return true;
     }

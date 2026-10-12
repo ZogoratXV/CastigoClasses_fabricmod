@@ -39,6 +39,10 @@ public final class PlayerClips {
         };
     }
     public static boolean active(int id){return playing.containsKey(id);}
+    public static boolean firstPersonRig(int id){
+        var c=playing.get(id);if(c==null){var g=idle.get(id);c=g==null?null:g.controller;}
+        return c!=null&&c.getFirstPersonMode()==FirstPersonMode.THIRD_PERSON_MODEL;
+    }
     public static boolean rigActive(int id){return playing.containsKey(id)||idle.containsKey(id);}
     public static void pruneGrips(java.util.function.IntPredicate valid){idle.entrySet().removeIf(e->{if(valid.test(e.getKey()))return false;e.getValue().controller.stop();return true;});}
     public static void grip(Player player,WeaponCalibration calibration){
@@ -81,6 +85,8 @@ public final class PlayerClips {
     }
     static boolean twoHandedProfile(CombatChoreography.Profile profile){return switch(profile){case TWO_HANDED,HEAVY_TWO_HANDED,THRUST_TWO_HANDED,SPIN,LOW_SWEEP->true;default->false;};}
     private static void configure(Controller controller,Player player,CombatChoreography.Profile profile,boolean left,WeaponCalibration calibration){
+        // Full-body two-handed clips remain in third person. Native item rendering avoids camera clipping.
+        controller.setFirstPersonMode(twoHandedProfile(profile)?FirstPersonMode.DISABLED:FirstPersonMode.THIRD_PERSON_MODEL);
         var adjustment=new AdjustmentModifier((bone,data)->{
             double pitch=0,yaw=0,roll=0,x=0,y=0,z=0;
             if(data.isFirstPersonPass()){

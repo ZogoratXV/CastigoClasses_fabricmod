@@ -43,7 +43,7 @@ public final class CastigoClient implements ClientModInitializer {
                 else if(o.get("type").getAsString().equals("diagnostics"))diagnose(context.client());
                 else if(o.get("type").getAsString().equals("feedback")) {
                     if(context.client().player!=null)context.client().player.sendOverlayMessage(Component.literal(o.get("message").getAsString()));
-                } else {STATE.receive(o);if(o.get("type").getAsString().equals("state"))CombatAnimations.context(o,context.client());}
+                } else {STATE.receive(o);if(o.get("type").getAsString().equals("state")||o.get("type").getAsString().equals("civilian_state"))CombatAnimations.context(o,context.client());}
             } catch(RuntimeException ignored) { /* Unknown or malformed server data is ignored. */ }
         }));
         ClientPlayConnectionEvents.JOIN.register((handler,sender,client)->reset());
