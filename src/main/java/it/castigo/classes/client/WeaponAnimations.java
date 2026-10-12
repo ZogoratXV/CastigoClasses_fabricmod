@@ -22,7 +22,7 @@ public final class WeaponAnimations {
     private static final Map<Integer,Grip> grips=new ConcurrentHashMap<>();
     public static boolean gripping(int entity){
         var g=grips.get(entity);var mc=Minecraft.getInstance();if(g==null||mc.level==null||System.nanoTime()>g.expires)return false;
-        var e=mc.level.getEntity(entity);return e instanceof net.minecraft.world.entity.player.Player p&&p.getUUID().equals(g.uuid)&&p.isAlive()&&!p.isSpectator()&&!p.isUsingItem()&&p.getOffhandItem().isEmpty()&&ItemStack.matches(p.getMainHandItem(),g.item);
+        var e=mc.level.getEntity(entity);return e instanceof net.minecraft.world.entity.player.Player p&&p.getUUID().equals(g.uuid)&&p.isAlive()&&!p.isSpectator()&&!p.isUsingItem()&&p.getOffhandItem().isEmpty()&&CombatAnimations.sameWeapon(p.getMainHandItem(),g.item);
     }
     public static void receiveGrip(JsonObject o,Minecraft mc){
         tick(mc);if(mc.level==null||mc.player==null||!o.get("world").getAsString().equals(world))return;
@@ -39,6 +39,8 @@ public final class WeaponAnimations {
         if(level!=mc.level||!world.equals(CastigoClient.STATE.world)||!CastigoClient.STATE.active()){clear();level=mc.level;world=CastigoClient.STATE.world;}
         if(mc.level==null)return;
         long now=System.nanoTime();grips.entrySet().removeIf(e->now>e.getValue().expires||!gripping(e.getKey()));
+        PlayerClips.pruneGrips(id->grips.containsKey(id)&&gripping(id));
+        for(var entry:grips.entrySet())if(mc.level.getEntity(entry.getKey()) instanceof net.minecraft.world.entity.player.Player player)PlayerClips.grip(player,entry.getValue().calibration);
         motions.entrySet().removeIf(entry->{
             var m=entry.getValue();var e=mc.level.getEntity(entry.getKey());
             return now-m.start>=m.duration||!(e instanceof net.minecraft.world.entity.player.Player p)||!p.getUUID().equals(m.uuid)||!p.isAlive()||p.isSpectator()||p.isUsingItem()

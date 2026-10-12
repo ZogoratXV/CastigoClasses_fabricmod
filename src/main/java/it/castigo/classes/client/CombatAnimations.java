@@ -90,7 +90,7 @@ public final class CombatAnimations {
     public static void supportHand(int entity,PoseStack stack,double sign){var m=motions.get(entity);if(m!=null)stack.translate(m.calibration.get("supportX")*sign,m.calibration.get("supportY"),m.calibration.get("supportZ"));}
     public static boolean active(int entity,InteractionHand hand){var mc=Minecraft.getInstance();var m=motions.get(entity);return m!=null&&m.off==(hand==InteractionHand.OFF_HAND)&&valid(entity,m,mc);}
     public static boolean firstPerson(int entity,InteractionHand hand,PoseStack stack){
-        if(PlayerClips.active(entity))return true;
+        if(PlayerClips.rigActive(entity))return true;
         if(!active(entity,hand))return false;var m=motions.get(entity);var f=m.frame().scale(m.calibration.get("firstIntensity"));double sign=m.left?-1:1;var c=m.calibration;
         stack.translate((f.x()+c.get("firstX"))*sign,f.y()+c.get("firstY"),f.z()+c.get("firstZ"));
         stack.mulPose(Axis.XP.rotationDegrees((float)(f.pitch()+c.get("firstPitch"))));stack.mulPose(Axis.YP.rotationDegrees((float)((f.yaw()+c.get("firstYaw"))*sign)));stack.mulPose(Axis.ZP.rotationDegrees((float)((f.roll()+c.get("firstRoll"))*sign)));return true;
@@ -98,7 +98,7 @@ public final class CombatAnimations {
     private static void rotate(net.minecraft.client.model.geom.ModelPart part,CombatChoreography.Rotation r,double sign){part.xRot+=(float)Math.toRadians(r.pitch());part.yRot+=(float)Math.toRadians(r.yaw()*sign);part.zRot+=(float)Math.toRadians(r.roll()*sign);}
     public static boolean thirdPerson(HumanoidRenderState state,HumanoidModel<?> model){
         if(!(state instanceof AvatarRenderState avatar)||avatar.isSpectator||state.isUsingItem)return false;
-        if(PlayerClips.active(avatar.id))return true;
+        if(PlayerClips.rigActive(avatar.id))return true;
         var m=motions.get(avatar.id);if(m==null||!valid(avatar.id,m,Minecraft.getInstance()))return false;
         var f=m.frame().scale(m.calibration.get("thirdIntensity"));double sign=m.left?-1:1;
         var main=m.left?model.leftArm:model.rightArm;var support=m.left?model.rightArm:model.leftArm;
