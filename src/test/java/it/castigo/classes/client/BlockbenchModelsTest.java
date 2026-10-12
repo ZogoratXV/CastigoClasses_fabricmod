@@ -3,10 +3,26 @@ import com.google.gson.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 class BlockbenchModelsTest {
+    @Test void comboSubHitsDoNotReplayTheEntireThreeHitEffect(){
+        var frames=new java.util.ArrayList<Object>();
+        for(int hit=0;hit<3;hit++){
+            var e=effect("32_sequenza_del_campione","combo"+hit);
+            var geometry=MeshGeometry.build(e,0,false);assertFalse(geometry.isEmpty(),"combo "+hit);frames.add(geometry);
+        }
+        assertNotEquals(frames.get(0),frames.get(1));assertNotEquals(frames.get(1),frames.get(2));
+    }
+    @Test void meleeReleaseHasVisibleGeometryOnTheVeryFirstFrame(){
+        for(String id:BlockbenchModels.ids()){
+            int n=Integer.parseInt(id.substring(0,2));
+            if(n<17||n>32)continue;
+            assertFalse(MeshGeometry.build(effect(id,"full"),0,false).isEmpty(),id);
+            assertNotEquals(MeshGeometry.build(effect(id,"full"),0,false),MeshGeometry.build(effect(id,"full"),4,false),id);
+        }
+    }
     private EffectMessage effect(String id,String phase){
         var d=VfxDraft.defaults();d.addProperty("shape","MESH_COLUMN");
         var p=VfxDraft.packet(d,"11111111-1111-1111-1111-111111111111",new EffectMessage.Position(0,64,0),new EffectMessage.Position(0,64,0),null);
-        p.addProperty("model",id+":"+phase);p.addProperty("modelTicks",60);return EffectMessage.read(p);
+        p.addProperty("model",id+":"+(phase.startsWith("combo")?"full":phase));if(phase.startsWith("combo"))p.addProperty("modelStrike",Integer.parseInt(phase.substring(5)));p.addProperty("modelTicks",60);return EffectMessage.read(p);
     }
     @Test void allFortyAssetsProduceFiniteAnimatedTexturedGeometry(){
         assertEquals(40,BlockbenchModels.ids().size());

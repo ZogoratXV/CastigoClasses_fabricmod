@@ -1,9 +1,10 @@
 plugins { id 'net.fabricmc.fabric-loom' version '1.17.21' }
 group = 'it.castigo'
-version = '0.1.0-beta.17'
-repositories { mavenCentral() }
+version = '0.1.0-beta.18'
+repositories { mavenCentral(); maven { url 'https://repo.redlance.org/public' } }
 dependencies {
     minecraft 'com.mojang:minecraft:26.2'
+    include(implementation('com.zigythebird.playeranim:PlayerAnimationLibFabric:1.2.5+mc.26.2'))
     implementation 'net.fabricmc:fabric-loader:0.19.5'
     implementation 'net.fabricmc.fabric-api:fabric-api:0.161.0+26.2'
     testImplementation platform('org.junit:junit-bom:5.12.2')
@@ -14,7 +15,8 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(25) }; withSourcesJa
 // Optional user-owned audio. The importer is public; its output stays local.
 sourceSets.main.resources.srcDir 'local-audio'
 sourceSets.main.resources.srcDir 'local-icons'
-tasks.named('sourcesJar') { exclude 'assets/castigoclasses_audio/**'; exclude 'assets/classi_regno/**' }
+sourceSets.main.resources.srcDir 'local-animations'
+tasks.named('sourcesJar') { exclude 'assets/castigoclasses_audio/**'; exclude 'assets/classi_regno/**'; exclude 'assets/castigoclasses_bc/**' }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 test { useJUnitPlatform() }
 processResources {

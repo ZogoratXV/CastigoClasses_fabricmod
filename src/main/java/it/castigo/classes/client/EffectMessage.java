@@ -21,6 +21,8 @@ public record EffectMessage(String world,Shape shape,Position from,Position at,i
         JsonObject p=o.getAsJsonObject("particles"),s=o.getAsJsonObject("sound");
         String category=s.get("category").getAsString();
         if(!java.util.Set.of("MASTER","MUSIC","RECORDS","WEATHER","BLOCKS","HOSTILE","NEUTRAL","PLAYERS","AMBIENT","VOICE").contains(category))throw new IllegalArgumentException("Unknown sound category");
+        String model=o.has("model")?BlockbenchModels.validate(o.get("model").getAsString()):null;
+        if("32_sequenza_del_campione:full".equals(model)&&o.has("modelStrike"))model="32_sequenza_del_campione:combo"+integer(o,"modelStrike",0,2);
         return new EffectMessage(world,Shape.valueOf(o.get("shape").getAsString()),from,at,
                 integer(o,"points",2,32),o.has("model")&&o.has("modelTicks")?integer(o,"modelTicks",1,600):integer(o,"durationTicks",1,40),number(o,"radius",0.1,12),
                 new Particles(p.get("enabled").getAsBoolean(),identifier(p,"id"),integer(p,"count",1,32),number(p,"spread",0,2),
@@ -29,7 +31,7 @@ public record EffectMessage(String world,Shape shape,Position from,Position at,i
                 o.has("target")?UUID.fromString(o.get("target").getAsString()):null,MeshSettings.read(o.has("mesh")?o.getAsJsonObject("mesh"):null),
                 o.has("targetEntity")?integer(o,"targetEntity",0,Integer.MAX_VALUE):-1,o.has("source")?UUID.fromString(o.get("source").getAsString()):null,
                 o.has("direction")?position(o.getAsJsonArray("direction")):new Position(0,0,1),o.has("handle")?UUID.fromString(o.get("handle").getAsString()).toString():null,
-                o.has("model")&&o.has("modelAnchorHeight")?number(o,"modelAnchorHeight",-2,12):o.has("anchorHeight")?number(o,"anchorHeight",-2,12):0,o.has("model")?BlockbenchModels.validate(o.get("model").getAsString()):null);
+                o.has("model")&&o.has("modelAnchorHeight")?number(o,"modelAnchorHeight",-2,12):o.has("anchorHeight")?number(o,"anchorHeight",-2,12):0,model);
     }
     public EffectMessage positioned(Position start,Position end,Position facing) {
         return new EffectMessage(world,shape,start,end,points,durationTicks,radius,particles,sound,target,mesh,targetEntity,source,facing,handle,anchorHeight,model);

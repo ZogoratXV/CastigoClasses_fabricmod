@@ -29,12 +29,12 @@ public final class CombatAnimations {
         var first=a.copy();var second=b.copy();first.remove(net.minecraft.core.component.DataComponents.DAMAGE);second.remove(net.minecraft.core.component.DataComponents.DAMAGE);
         return ItemStack.matches(first,second);
     }
-    public static void clear(){motions.clear();transitions.clear();sequences.clear();supported=false;profile="VANILLA";contextItem=ItemStack.EMPTY;lastWeapon=ItemStack.EMPTY;calibration=new WeaponCalibration(null);lastAttack=0;variant=0;lastSlot=-1;level=null;world="";}
+    public static void clear(){PlayerClips.clear();motions.clear();transitions.clear();sequences.clear();supported=false;profile="VANILLA";contextItem=ItemStack.EMPTY;lastWeapon=ItemStack.EMPTY;calibration=new WeaponCalibration(null);lastAttack=0;variant=0;lastSlot=-1;level=null;world="";}
     public static void tick(Minecraft mc){
         if(level!=mc.level||!world.equals(CastigoClient.STATE.world)||!CastigoClient.STATE.active()){clear();level=mc.level;world=CastigoClient.STATE.world;}
         if(mc.level==null)return;
         transitions.values().removeIf(t->System.nanoTime()-t.at>150_000_000L);
-        motions.entrySet().removeIf(e->!valid(e.getKey(),e.getValue(),mc));
+        motions.entrySet().removeIf(e->{if(valid(e.getKey(),e.getValue(),mc))return false;PlayerClips.stop(e.getKey());return true;});
         if(sequences.size()>256)sequences.clear();
     }
     private static boolean valid(int id,Motion m,Minecraft mc){
@@ -60,6 +60,7 @@ public final class CombatAnimations {
         lastAttack=now;lastSlot=mc.player.getInventory().getSelectedSlot();lastWeapon=contextItem.copy();long id=++prediction;
         long duration=(long)(Math.clamp(mc.player.getCurrentItemAttackStrengthDelay(),5,20)*50_000_000L);
         motions.put(mc.player.getId(),new Motion(mc.player.getUUID(),contextItem.copy(),false,true,false,mc.player.getMainArm()==HumanoidArm.LEFT,kind,variant,now,duration,id,calibration,active==null?CombatChoreography.REST:active.frame()));
+        PlayerClips.play(mc.player,kind,variant,false,mc.player.getMainArm()==HumanoidArm.LEFT,(int)(duration/50_000_000L),calibration);
         JsonObject request=new JsonObject();request.addProperty("id",id);CastigoClient.request("attack_visual",request);
     }
     public static void receive(JsonObject o,Minecraft mc){
@@ -67,12 +68,12 @@ public final class CombatAnimations {
         int id=o.get("entity").getAsInt();UUID uuid=UUID.fromString(o.get("player").getAsString());var e=mc.level.getEntity(id);
         if(!(e instanceof Player p)||!p.getUUID().equals(uuid)||p.distanceToSqr(mc.player)>4096)return;
         long sequence=o.get("sequence").getAsLong();if(sequence<=sequences.getOrDefault(uuid,-1L))return;sequences.put(uuid,sequence);
-        String phase=o.get("phase").getAsString();if(phase.equals("stop")){var previous=motions.remove(id);if(previous!=null)transitions.put(id,new Transition(uuid,previous.item,previous.frame(),System.nanoTime()));return;}
+        String phase=o.get("phase").getAsString();if(phase.equals("stop")){PlayerClips.stop(id);var previous=motions.remove(id);if(previous!=null)transitions.put(id,new Transition(uuid,previous.item,previous.frame(),System.nanoTime()));return;}
         if(!phase.equals("release")&&!phase.equals("prepare"))return;
         int ticks=o.get("duration").getAsInt();if(ticks<1||ticks>600||motions.size()>=128&&!motions.containsKey(id))return;
         boolean normal=o.get("normal").getAsBoolean(),off=o.get("offhand").getAsBoolean();var existing=motions.get(id);
         if(normal&&existing!=null&&!existing.normal)return;
-        var kind=CombatChoreography.parse(o.has("gesture")?o.get("gesture").getAsString():o.get("profile").getAsString());if(kind==CombatChoreography.Profile.VANILLA){motions.remove(id);return;}
+        var kind=CombatChoreography.parse(o.has("gesture")?o.get("gesture").getAsString():o.get("profile").getAsString());if(kind==CombatChoreography.Profile.VANILLA){PlayerClips.stop(id);motions.remove(id);return;}
         long request=normal?o.get("prediction").getAsLong():-1;
         // Keep the predicted start time on acknowledgment, preventing a second swing.
         if(normal&&p==mc.player&&(request!=prediction||lastAttack==0||System.nanoTime()-lastAttack>=ticks*50_000_000L||!sameWeapon(p.getMainHandItem(),lastWeapon)))return;
@@ -80,6 +81,7 @@ public final class CombatAnimations {
         var transition=transitions.remove(id);var origin=existing!=null?existing.frame():transition!=null&&transition.player.equals(uuid)&&sameWeapon(transition.item,p.getItemInHand(off?InteractionHand.OFF_HAND:InteractionHand.MAIN_HAND))?transition.frame:CombatChoreography.REST;
         if(normal&&p==mc.player&&existing!=null&&existing.prediction==request)origin=existing.origin;
         motions.put(id,new Motion(uuid,p.getItemInHand(off?InteractionHand.OFF_HAND:InteractionHand.MAIN_HAND).copy(),off,normal,phase.equals("prepare"),(p.getMainArm()==HumanoidArm.LEFT)^off,kind,o.get("variant").getAsInt()&1,start,ticks*50_000_000L,request,new WeaponCalibration(o),origin));
+        if(!(normal&&p==mc.player&&existing!=null&&existing.prediction==request))PlayerClips.play(p,kind,o.get("variant").getAsInt()&1,phase.equals("prepare"),(p.getMainArm()==HumanoidArm.LEFT)^off,ticks,new WeaponCalibration(o));
     }
     public static boolean twoHanded(int entity){
         var m=motions.get(entity);var mc=Minecraft.getInstance();if(m==null||m.profile!=CombatChoreography.Profile.TWO_HANDED||!active(entity,InteractionHand.MAIN_HAND))return false;
@@ -88,6 +90,7 @@ public final class CombatAnimations {
     public static void supportHand(int entity,PoseStack stack,double sign){var m=motions.get(entity);if(m!=null)stack.translate(m.calibration.get("supportX")*sign,m.calibration.get("supportY"),m.calibration.get("supportZ"));}
     public static boolean active(int entity,InteractionHand hand){var mc=Minecraft.getInstance();var m=motions.get(entity);return m!=null&&m.off==(hand==InteractionHand.OFF_HAND)&&valid(entity,m,mc);}
     public static boolean firstPerson(int entity,InteractionHand hand,PoseStack stack){
+        if(PlayerClips.active(entity))return true;
         if(!active(entity,hand))return false;var m=motions.get(entity);var f=m.frame().scale(m.calibration.get("firstIntensity"));double sign=m.left?-1:1;var c=m.calibration;
         stack.translate((f.x()+c.get("firstX"))*sign,f.y()+c.get("firstY"),f.z()+c.get("firstZ"));
         stack.mulPose(Axis.XP.rotationDegrees((float)(f.pitch()+c.get("firstPitch"))));stack.mulPose(Axis.YP.rotationDegrees((float)((f.yaw()+c.get("firstYaw"))*sign)));stack.mulPose(Axis.ZP.rotationDegrees((float)((f.roll()+c.get("firstRoll"))*sign)));return true;
@@ -95,6 +98,7 @@ public final class CombatAnimations {
     private static void rotate(net.minecraft.client.model.geom.ModelPart part,CombatChoreography.Rotation r,double sign){part.xRot+=(float)Math.toRadians(r.pitch());part.yRot+=(float)Math.toRadians(r.yaw()*sign);part.zRot+=(float)Math.toRadians(r.roll()*sign);}
     public static boolean thirdPerson(HumanoidRenderState state,HumanoidModel<?> model){
         if(!(state instanceof AvatarRenderState avatar)||avatar.isSpectator||state.isUsingItem)return false;
+        if(PlayerClips.active(avatar.id))return true;
         var m=motions.get(avatar.id);if(m==null||!valid(avatar.id,m,Minecraft.getInstance()))return false;
         var f=m.frame().scale(m.calibration.get("thirdIntensity"));double sign=m.left?-1:1;
         var main=m.left?model.leftArm:model.rightArm;var support=m.left?model.rightArm:model.leftArm;

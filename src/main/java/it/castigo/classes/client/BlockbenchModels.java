@@ -18,6 +18,7 @@ public final class BlockbenchModels {
     private static final Map<String,Model> CACHE=new HashMap<>();
     private static final Set<String> IDS=loadIds();
     private static final Map<String,float[]> IMPACT_WINDOWS=new HashMap<>();
+    private static final JsonObject STRIKE_STARTS=json("melee-timing").getAsJsonObject();
     private BlockbenchModels() {}
     private static JsonElement json(String name) {
         try(var stream=BlockbenchModels.class.getResourceAsStream("/assets/castigoclasses/models/blockbench/"+name+".json")) {
@@ -72,12 +73,19 @@ public final class BlockbenchModels {
         boolean projectile=number==2||number==9||number==33||number>=37;
         boolean flight=phase.equals("flight"),hit=phase.equals("impact")&&projectile;
         float time=phase.equals("loop")?(float)(age/20%clip.length):(float)Math.clamp(age/e.durationTicks(),0,1)*clip.length;
+        if(number>=17&&number<=32&&phase.equals("full")){
+            float start=STRIKE_STARTS.has(parts[0])?STRIKE_STARTS.get(parts[0]).getAsFloat():0;
+            // Preserve authored playback speed. Do not stretch the shortened sequence again.
+            time=Math.min(clip.length,start+(float)Math.max(0,age)/20);
+        }
         if(number==8&&phase.equals("loop")){
             if(age<32){for(var c:m.clips)if(c.name.contains("comparsa")&&!c.name.contains("scomparsa")){clip=c;time=(float)age/20;break;}}
             else time=(float)((age-32)/20%clip.length);
         }
         if(flight)time=clip.length*.35f;
         if(hit&&m.clips.size()==1){float[] window=IMPACT_WINDOWS.get(parts[0]);if(window==null){window=impactWindow(m,clip,number);IMPACT_WINDOWS.put(parts[0],window);}time=window[0]+(window[1]-window[0])*(float)Math.clamp(age/e.durationTicks(),0,1);}
+        int combo=number==32&&phase.matches("combo[012]")?phase.charAt(5)-'0':-1;
+        if(combo>=0)time=new float[]{.255f,.755f,1.53f}[combo]+(float)Math.max(0,age)/20;
         float yaw=(float)Math.atan2(-e.direction().x(),-e.direction().z());
         var world=new Matrix4f().rotateY(yaw);
         if(flight){double horizontal=Math.hypot(e.direction().x(),e.direction().z());world.rotateX((float)Math.atan2(e.direction().y(),horizontal));}
@@ -94,6 +102,7 @@ public final class BlockbenchModels {
             var n=m.nodes.get(i);var tracks=clip.channels.getOrDefault(i,Map.of());
             var position=sample(tracks.get("position"),time,0);var rotation=sample(tracks.get("rotation"),time,0).add(n.rotation);var scale=sample(tracks.get("scale"),time,1);
             boolean visible=n.parent<0||enabled[n.parent];
+            if(combo>=0&&n.parent<0)visible=combo<2?n.name.startsWith("combo_"+combo+"_"):!n.name.startsWith("combo_");
             if(projectile&&n.parent<0){if(flight||hit)visible=selectedRoot(n.name,flight,number);}
             if(flight&&n.parent<0){position.set(0,0,0);scale.set(1,1,1);}
             if(number==9&&phase.equals("loop")&&n.parent<0)visible=n.name.contains("marchio");

@@ -28,6 +28,7 @@ public final class CastigoClient implements ClientModInitializer {
     public static KeyMapping toggle,editor;
     private static int handshakeTicks;
     @Override public void onInitializeClient() {
+        PlayerClips.register();
         MeshRenderer.register();
         PayloadTypeRegistry.clientboundPlay().register(ClassesPayload.TYPE,ClassesPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(ClassesPayload.TYPE,ClassesPayload.CODEC);

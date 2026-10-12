@@ -1,7 +1,7 @@
 package it.castigo.classes.client;
 /** Original Castigo key poses, authored independently; degrees and model-relative offsets. */
 public final class CombatChoreography {
-    public enum Profile { VANILLA,SWORD,TWO_HANDED,AXE,THRUST,SHIELD,BOW,CAST,BLESS,CURSE,CHANNEL,DASH,RALLY,SPIN,LOW_SWEEP }
+    public enum Profile { VANILLA,SWORD,TWO_HANDED,AXE,THRUST,SHIELD,BOW,CAST,BLESS,CURSE,CHANNEL,DASH,RALLY,SPIN,LOW_SWEEP,HEAVY_TWO_HANDED,THRUST_TWO_HANDED }
     public record Rotation(double pitch,double yaw,double roll){
         Rotation scale(double w){return new Rotation(pitch*w,yaw*w,roll*w);}
         static Rotation mix(Rotation a,Rotation b,double t){return new Rotation(a.pitch+(b.pitch-a.pitch)*t,a.yaw+(b.yaw-a.yaw)*t,a.roll+(b.roll-a.roll)*t);}
@@ -26,8 +26,8 @@ public final class CombatChoreography {
         case VANILLA -> REST;
         case SWORD -> pose(-100,35*side,42*side,-20,-12,-8,-4,-24*side,3*side,.12*side,-.06,.08,-28,20*side,22*side);
         case TWO_HANDED -> pose(-125,25*side,28*side,-110,-35*side,-20*side,-8,-28*side,4*side,-.12,-.06,.12,-40,15*side,16*side);
-        case AXE -> pose(-155,12,18,-65,-25,-18,-12,-16,4,.08,-.04,.10,-50,12,16);
-        case THRUST -> pose(-65,-32,14,-30,15,-10,-5,-18,0,.02,-.08,.20,-14,-18,8);
+        case AXE,HEAVY_TWO_HANDED -> pose(-155,12,18,-65,-25,-18,-12,-16,4,.08,-.04,.10,-50,12,16);
+        case THRUST,THRUST_TWO_HANDED -> pose(-65,-32,14,-30,15,-10,-5,-18,0,.02,-.08,.20,-14,-18,8);
         case SHIELD -> pose(-80,22,-18,-25,-12,8,-4,12,-3,-.18,-.08,.08,-12,18,-12);
         case BOW -> pose(-85,-20,4,-100,55,-8,0,-12,0,.12,-.20,-.12,-4,5,-3);
         case CAST -> pose(-110,-20,15,-90,28,-18,-4,-10,0,-.04,-.08,-.04,-25,-8,10);
@@ -43,8 +43,8 @@ public final class CombatChoreography {
         case VANILLA -> REST;
         case SWORD -> pose(-72,-32*side,-32*side,-18,12,8,7,22*side,-4*side,-.15*side,-.12,-.20,18,-28*side,-24*side);
         case TWO_HANDED -> pose(-75,-35*side,-20*side,-80,30*side,15*side,10,28*side,-5*side,-.12,-.14,-.26,24,-24*side,-20*side);
-        case AXE -> pose(-42,-12,-16,-45,20,15,14,18,-3,.04,-.24,-.25,32,-16,-14);
-        case THRUST -> pose(-90,-5,0,-35,15,-10,8,10,0,-.02,-.12,-.42,0,2,0);
+        case AXE,HEAVY_TWO_HANDED -> pose(-42,-12,-16,-45,20,15,14,18,-3,.04,-.24,-.25,32,-16,-14);
+        case THRUST,THRUST_TWO_HANDED -> pose(-90,-5,0,-35,15,-10,8,10,0,-.02,-.12,-.42,0,2,0);
         case SHIELD -> pose(-95,12,-12,-35,-12,8,8,-12,2,-.20,-.10,-.26,8,-10,-8);
         case BOW -> pose(-88,-18,4,-82,68,-12,2,-10,0,.14,-.22,-.16,0,7,-4);
         case CAST -> pose(-85,8,10,-80,-8,-10,4,8,0,-.04,-.10,-.28,10,8,6);
