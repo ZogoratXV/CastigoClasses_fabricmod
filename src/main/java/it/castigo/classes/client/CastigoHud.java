@@ -37,7 +37,7 @@ public final class CastigoHud {
     public static void portrait(GuiGraphicsExtractor g) {
         Minecraft mc=Minecraft.getInstance();if(mc.player==null)return;
         ClientState s=CastigoClient.STATE;
-        ClientState.ClassInfo c=s.currentClass();if(c==null)return;
+        ClientState.ClassInfo c=s.currentClass();if(c==null&&!s.civilian)return;
         HudTheme theme=s.hud;
         int x=5,y=5,w=theme.number("width"),h=theme.number("height");
         int border=theme.color("border",GOLD),text=theme.color("text",IVORY);
@@ -54,15 +54,15 @@ public final class CastigoHud {
         g.blit(skin,hx,hy,hx+size,hy+size,40/64f,48/64f,8/64f,16/64f);
         int tx=x+theme.number("textX"),available=w-theme.number("textX")-16;
         portraitText(g,s.name+" · "+s.level,tx,y+theme.number("nameY"),available,text,theme.number("textScale"));
-        portraitText(g,c.name(),tx,y+theme.number("classY"),available,border,theme.number("textScale"));
+        portraitText(g,s.civilian?"Popolano":c.name(),tx,y+theme.number("classY"),available,border,theme.number("textScale"));
         if(!s.group.isBlank())portraitText(g,s.group,tx,y+theme.number("groupY"),available,text,theme.number("textScale"));
         int bx=x+theme.number("barsX"),bw=theme.number("barsWidth");
         meter(g,bx,y+theme.number("healthY"),bw,s.health,s.maxHealth,theme.color("healthColor",0xFFA5343E),
                 "Vita "+value(s.health)+" / "+value(s.maxHealth),border,text,theme.number("barHeight"),theme.number("barTextScale"),!hasTexture);
-        meter(g,bx,y+theme.number("resourceY"),bw,s.resource,s.maxResource,theme.color("resourceColor",0xFF000000|c.resourceColor()),
+        if(!s.civilian)meter(g,bx,y+theme.number("resourceY"),bw,s.resource,s.maxResource,theme.color("resourceColor",0xFF000000|c.resourceColor()),
                 c.resourceName()+" "+value(s.resource)+" / "+value(s.maxResource),border,text,theme.number("barHeight"),theme.number("barTextScale"),!hasTexture);
         int xpY=y+theme.number("xpY");
-        double progress=s.classCapped||s.dailyCapped||s.xpNext==0?1:Math.max(0,Math.min(1,(double)s.xp/s.xpNext));
+        double progress=s.civilian?0:s.classCapped||s.dailyCapped||s.xpNext==0?1:Math.max(0,Math.min(1,(double)s.xp/s.xpNext));
         int gap=theme.text("texture").equals("castigoclasses:textures/gui/hud/mago_nero.png")?4:0;
         int half=(bw-gap)/2,filled=(int)((bw-gap)*progress);
         g.fill(bx,xpY,bx+half,xpY+2,0xFF3C3020);g.fill(bx+half+gap,xpY,bx+bw,xpY+2,0xFF3C3020);

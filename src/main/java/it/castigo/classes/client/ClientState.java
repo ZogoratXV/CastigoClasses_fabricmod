@@ -13,7 +13,7 @@ public final class ClientState {
     private final Gson gson=new Gson();
     public final Map<String,ClassInfo> classes=new LinkedHashMap<>();
     private final Map<String,ClassInfo> pending=new LinkedHashMap<>();
-    public boolean enabled;
+    public boolean enabled,civilian;
     public String name="",classId="",group="";
     public String world="";
     public HudTheme hud=new HudTheme(null);
@@ -38,12 +38,13 @@ public final class ClientState {
     public long castingTotal,castingRemaining,castingReceived;
     public double castingProgress(long now) { return castingTotal<=0?0:Math.max(0,Math.min(1,1-(castingRemaining-Math.max(0,now-castingReceived))/(double)castingTotal)); }
     public void clear() {
-        enabled=false;classes.clear();pending.clear();slots=List.of();cooldownEnds.clear();stats.clear();lastUpdate=0;
+        enabled=false;civilian=false;classes.clear();pending.clear();slots=List.of();cooldownEnds.clear();stats.clear();lastUpdate=0;
         clearPoints();combat.clear();classCapped=false;dailyCapped=false;dailyXp=0;dailyCap=0;dailyResetAt=0;classLevelCap=0;world="";hud=new HudTheme(null);
         castingName="";castingTarget="";castingTotal=0;
     }
     public ClassInfo currentClass() { return classes.get(classId); }
-    public boolean active() { return enabled&&currentClass()!=null&&slots.size()==8&&System.currentTimeMillis()-lastUpdate<10000; }
+    public boolean hudActive(){return enabled&&(civilian||active())&&System.currentTimeMillis()-lastUpdate<10000;}
+    public boolean active() { return enabled&&!civilian&&currentClass()!=null&&slots.size()==8&&System.currentTimeMillis()-lastUpdate<10000; }
     public void receive(JsonObject o) {
         switch(o.get("type").getAsString()) {
             case "catalog_begin" -> pending.clear();
@@ -52,6 +53,14 @@ public final class ClientState {
                 if(c!=null&&c.id()!=null&&c.name()!=null&&c.resourceName()!=null&&c.skills()!=null&&c.skills().size()==8&&pending.size()<256)pending.put(c.id(),c);
             }
             case "catalog_end" -> { classes.clear();classes.putAll(pending);pending.clear(); }
+            case "civilian_state" -> {
+                var known=new LinkedHashMap<>(classes);clear();classes.putAll(known);
+                name=o.get("name").getAsString();group=o.get("group").getAsString();classId="";
+                world=o.get("world").getAsString();level=o.get("level").getAsInt();
+                health=number(o,"health");maxHealth=number(o,"maxHealth");resource=0;maxResource=0;xp=0;xpNext=0;
+                try{hud=new HudTheme(o.getAsJsonObject("hud"));}catch(RuntimeException invalid){hud=new HudTheme(null);}
+                civilian=true;enabled=true;lastUpdate=System.currentTimeMillis();
+            }
             case "state" -> {
                 String next=o.get("classId").getAsString();ClassInfo c=classes.get(next);if(c==null)return;
                 List<String> order=new ArrayList<>();o.getAsJsonArray("slots").forEach(e->order.add(e.getAsString()));
@@ -75,7 +84,7 @@ public final class ClientState {
                 }
                 cooldownEnds.clear();long now=System.currentTimeMillis();
                 o.getAsJsonObject("cooldowns").entrySet().forEach(e->cooldownEnds.put(e.getKey(),now+Math.max(0,Math.min(86_400_000,e.getValue().getAsLong()))));
-                lastUpdate=now;enabled=true;
+                lastUpdate=now;enabled=true;civilian=false;
                 castingName="";castingTarget="";castingTotal=0;
                 if(o.has("casting")&&o.getAsJsonObject("casting").has("name")) {
                     var cast=o.getAsJsonObject("casting");long total=cast.get("totalMs").getAsLong(),remaining=cast.get("remainingMs").getAsLong();

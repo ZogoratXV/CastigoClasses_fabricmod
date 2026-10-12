@@ -42,6 +42,7 @@ public final class PlayerClips {
     public static boolean rigActive(int id){return playing.containsKey(id)||idle.containsKey(id);}
     public static void pruneGrips(java.util.function.IntPredicate valid){idle.entrySet().removeIf(e->{if(valid.test(e.getKey()))return false;e.getValue().controller.stop();return true;});}
     public static void grip(Player player,WeaponCalibration calibration){
+        if(active(player.getId())){stopGrip(player.getId());return;}
         boolean left=player.getMainArm()==net.minecraft.world.entity.HumanoidArm.LEFT;
         var old=idle.get(player.getId());
         if(old!=null&&old.controller.getAvatar()==player&&old.left==left&&old.calibration.equals(calibration.signature())&&CombatAnimations.sameWeapon(old.item,player.getMainHandItem()))return;
@@ -53,6 +54,7 @@ public final class PlayerClips {
         controller.triggerAnimation(animation);
         idle.put(player.getId(),new Idle(controller,player.getMainHandItem().copy(),calibration.signature(),left));
     }
+    private static void stopGrip(int id){var old=idle.remove(id);if(old!=null)old.controller.stop();}
     public static void stop(int id){var controller=playing.remove(id);if(controller!=null)controller.stop();}
     public static void clear(){for(var c:playing.values())c.stop();playing.clear();for(var i:idle.values())i.controller.stop();idle.clear();}
     public static void play(Player player,CombatChoreography.Profile profile,int variant,boolean preparing,boolean left,int ticks,WeaponCalibration calibration){
@@ -65,6 +67,7 @@ public final class PlayerClips {
             if(missing.add(name))org.slf4j.LoggerFactory.getLogger("CastigoClasses").warn("Animation {} missing; run the local animation importer for Better Combat clips",name);
             return;
         }
+        stopGrip(player.getId());
         controller.stop();controller.removeAllModifiers();
         var mirror=new MirrorModifier();mirror.enabled=left;controller.addModifierLast(mirror);
         Object marker=animation.data().getRaw(ExtraAnimationData.BEGIN_TICK_KEY);
@@ -78,15 +81,14 @@ public final class PlayerClips {
     }
     static boolean twoHandedProfile(CombatChoreography.Profile profile){return switch(profile){case TWO_HANDED,HEAVY_TWO_HANDED,THRUST_TWO_HANDED,SPIN,LOW_SWEEP->true;default->false;};}
     private static void configure(Controller controller,Player player,CombatChoreography.Profile profile,boolean left,WeaponCalibration calibration){
-        controller.addModifierBefore(new AdjustmentModifier((bone,data)->{
+        var adjustment=new AdjustmentModifier((bone,data)->{
             double pitch=0,yaw=0,roll=0,x=0,y=0,z=0;
             if(data.isFirstPersonPass()){
                 if(!bone.equals("body"))return Optional.empty();
-                pitch=player.getXRot()+calibration.get("firstPitch");yaw=calibration.get("firstYaw");roll=calibration.get("firstRoll");
-                x=calibration.get("firstX");y=calibration.get("firstY");z=calibration.get("firstZ");
-                // The bow stays below the crosshair; the real two-arm rig is still used.
-                if(profile==CombatChoreography.Profile.BOW){y-=.22;z-=.15;}
-                if(twoHandedProfile(profile)){x+=left?-.22:.22;y-=.28;z-=.38;}
+                // PAL already follows camera pitch; applying it again rotates the sword into the camera.
+                var view=FirstPersonPlacement.of(profile,left,calibration);
+                pitch=view.pitch();yaw=view.yaw();roll=view.roll();
+                x=view.x();y=view.y();z=view.z();
             }else if(bone.equals(left?"left_arm":"right_arm")){
                 pitch=calibration.get("mainPitch");yaw=calibration.get("mainYaw");roll=calibration.get("mainRoll");
             }else if(bone.equals(left?"right_arm":"left_arm")){
@@ -94,7 +96,9 @@ public final class PlayerClips {
                 x=calibration.get("supportX");y=calibration.get("supportY");z=calibration.get("supportZ");
             }else return Optional.empty();
             return Optional.of(new AdjustmentModifier.PartModifier(new Vec3f((float)Math.toRadians(pitch),(float)Math.toRadians(yaw),(float)Math.toRadians(roll)),new Vec3f((float)(x*16),(float)(y*16),(float)(z*16))));
-        }));
+        });
+        adjustment.fadeIn=false;adjustment.fadeOut=false;
+        controller.addModifierBefore(adjustment);
         controller.addModifierBefore(new AbstractModifier(){
             @Override public void get3DTransform(com.zigythebird.playeranimcore.bones.PlayerAnimBone bone){
                 var before=new com.zigythebird.playeranimcore.bones.PlayerAnimBone(bone);

@@ -6,6 +6,13 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ClientStateTest {
+    @Test void civilianKeepsHudWithoutSkillsAndCanReceiveANewClass(){
+        var s=state();s.receive(packet());
+        var p=JsonParser.parseString("{\"type\":\"civilian_state\",\"name\":\"Test\",\"group\":\"popolano\",\"world\":\"world\",\"level\":3,\"health\":18,\"maxHealth\":20}").getAsJsonObject();
+        s.receive(p);assertTrue(s.hudActive());assertFalse(s.active());assertEquals(3,s.level);assertEquals(18,s.health);assertTrue(s.slots.isEmpty());assertEquals(0,s.castingTotal);assertNull(s.currentClass());
+        s.receive(packet());assertTrue(s.active());assertTrue(s.hudActive());assertFalse(s.civilian);
+        s.receive(p);s.lastUpdate-=10001;assertFalse(s.hudActive());
+    }
     @Test void capColorsPrioritizeClassAndClearWithOldPackets(){
         var s=state();var p=packet();p.addProperty("dailyCapped",true);s.receive(p);assertEquals(0xFFE14444,s.xpColor(123));
         p.addProperty("classCapped",true);s.receive(p);assertEquals(0xFF43C96B,s.xpColor(123));

@@ -55,7 +55,7 @@ public final class CastigoClient implements ClientModInitializer {
             ClientEffects.tick(client);
             WeaponAnimations.tick(client);CombatAnimations.tick(client);
             if(client.player==null)return;
-            if(!STATE.active()&&++handshakeTicks>=40) { handshakeTicks=0;request("hello",new JsonObject()); }
+            if(!STATE.hudActive()&&++handshakeTicks>=40) { handshakeTicks=0;request("hello",new JsonObject()); }
             while(toggle.consumeClick()) {
                 if(client.gui.screen()==null&&STATE.active()&&!client.player.isSpectator())skillMode=!skillMode;
                 else if(!STATE.active())client.player.sendOverlayMessage(Component.translatable("castigoclasses.unavailable"));
@@ -71,13 +71,13 @@ public final class CastigoClient implements ClientModInitializer {
             if(!isSkillMode())original.extractRenderState(graphics,delta);
         });
         HudElementRegistry.replaceElement(VanillaHudElements.HEALTH_BAR,original->(graphics,delta)-> {
-            if(!STATE.active())original.extractRenderState(graphics,delta);
+            if(!STATE.hudActive())original.extractRenderState(graphics,delta);
         });
         HudElementRegistry.replaceElement(VanillaHudElements.EXPERIENCE_LEVEL,original->(graphics,delta)-> {
-            if(!STATE.active())original.extractRenderState(graphics,delta);
+            if(!STATE.hudActive())original.extractRenderState(graphics,delta);
         });
         HudElementRegistry.replaceElement(VanillaHudElements.FOOD_BAR,original->(graphics,delta)-> {
-            if(!STATE.active()) { original.extractRenderState(graphics,delta);return; }
+            if(!STATE.hudActive()) { original.extractRenderState(graphics,delta);return; }
             // Move center+10..center+91 to center-91..center-10, retaining vanilla hunger visuals.
             graphics.pose().pushMatrix();
             try {
@@ -86,7 +86,7 @@ public final class CastigoClient implements ClientModInitializer {
             } finally { graphics.pose().popMatrix(); }
         });
         HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT,Identifier.fromNamespaceAndPath("castigoclasses","portrait"),(graphics,delta)-> {
-            if(STATE.active()&&!Minecraft.getInstance().gui.hud.isHidden()) { CastigoHud.portrait(graphics);CastigoHud.casting(graphics); }
+            if(STATE.hudActive()&&!Minecraft.getInstance().gui.hud.isHidden()) { CastigoHud.portrait(graphics);CastigoHud.casting(graphics); }
         });
     }
     private static void reset() { STATE.clear();ClientEffects.clear();WeaponAnimations.clear();CombatAnimations.clear();skillMode=false;handshakeTicks=35; }
