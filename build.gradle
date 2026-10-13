@@ -1,6 +1,6 @@
 plugins { id 'net.fabricmc.fabric-loom' version '1.17.21' }
 group = 'it.castigo'
-version = '0.1.0-beta.26'
+version = '0.1.0-beta.28'
 repositories { mavenCentral(); maven { url 'https://repo.redlance.org/public' } }
 dependencies {
     minecraft 'com.mojang:minecraft:26.2'
@@ -19,7 +19,39 @@ sourceSets.main.resources.srcDir 'local-animations'
 tasks.named('sourcesJar') { exclude 'assets/castigoclasses_audio/**'; exclude 'assets/classi_regno/**'; exclude 'assets/castigoclasses_bc/**' }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 test { useJUnitPlatform() }
+// Original pixel tooltip frames. Generated without external tools or licensed assets.
+def tooltipOutput = layout.buildDirectory.dir('generated/rarity-tooltips')
+tasks.register('generateRarityTooltips') {
+    outputs.dir tooltipOutput
+    doLast {
+        def colors = [black:0x000000, dark_blue:0x0000aa, dark_green:0x00aa00, dark_aqua:0x00aaaa,
+                      dark_red:0xaa0000, dark_purple:0xaa00aa, gold:0xffaa00, gray:0xaaaaaa,
+                      dark_gray:0x555555, blue:0x5555ff, green:0x55ff55, aqua:0x55ffff,
+                      red:0xff5555, light_purple:0xff55ff, yellow:0xffff55, white:0xffffff]
+        def folder = new File(tooltipOutput.get().asFile, 'assets/castigoclasses/textures/gui/sprites/tooltip')
+        folder.mkdirs()
+        colors.each { name, rgb ->
+            ['background', 'frame'].each { part ->
+                def image = new java.awt.image.BufferedImage(100, 100, java.awt.image.BufferedImage.TYPE_INT_ARGB)
+                def g = image.createGraphics()
+                if (part == 'background') {
+                    g.setColor(new java.awt.Color(14, 12, 19, 245)); g.fillRect(8, 9, 84, 82); g.fillRect(9, 8, 82, 84)
+                } else {
+                    g.setColor(new java.awt.Color((int)rgb)); g.drawLine(10, 9, 89, 9); g.drawLine(9, 10, 9, 89)
+                    g.setColor(new java.awt.Color((int)rgb).darker()); g.drawLine(10, 90, 89, 90); g.drawLine(90, 10, 90, 89)
+                }
+                g.dispose()
+                def file = new File(folder, "${name}_${part}.png")
+                javax.imageio.ImageIO.write(image, 'png', file)
+                new File(folder, file.name + '.mcmeta').text = groovy.json.JsonOutput.toJson([gui:[scaling:[type:'nine_slice',width:100,height:100,border:10,stretch_inner:true]]])
+            }
+        }
+    }
+}
+sourceSets.main.resources.srcDir tooltipOutput
+tasks.named('sourcesJar') { dependsOn 'generateRarityTooltips' }
 processResources {
+    dependsOn 'generateRarityTooltips'
     inputs.property('version', project.version)
     filesMatching('fabric.mod.json') { expand(version: project.version) }
 }
